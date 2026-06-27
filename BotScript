@@ -6,6 +6,8 @@ local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
+local spinning = false
+local scriptConnection = nil
 
 -- Queue this script to re-execute after every teleport
 queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript"))
@@ -140,9 +142,56 @@ local function handleMessage(message)
 			end
 		end
 
+	elseif command == "jump" then
+
+		local character = LocalPlayer.Character
+
+		if character then
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+			if humanoid then
+				humanoid.Jump = true
+			end
+		end
+
+	elseif command == "spin" then
+
+		if spinning then
+			return
+		end
+
+		spinning = true
+
+		task.spawn(function()
+			while spinning do
+				local character = LocalPlayer.Character
+				if character then
+					local hrp = character:FindFirstChild("HumanoidRootPart")
+					if hrp then
+						hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(10), 0)
+					end
+				end
+				task.wait(0.03)
+			end
+		end)
+
+	elseif command == "unspin" then
+
+		spinning = false
+
 	elseif command == "rejoin" then
 
 		TeleportService:Teleport(game.PlaceId, LocalPlayer)
+
+	elseif command == "stop" then
+
+		spinning = false
+		queue_on_teleport("")
+		if scriptConnection then
+			scriptConnection:Disconnect()
+			scriptConnection = nil
+		end
+		chat("Bot stopped.")
 
 	elseif command == "servershutdown" then
 
@@ -197,5 +246,5 @@ end
 local channel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
 
 if channel then
-	channel.MessageReceived:Connect(handleMessage)
+	scriptConnection = channel.MessageReceived:Connect(handleMessage)
 end
