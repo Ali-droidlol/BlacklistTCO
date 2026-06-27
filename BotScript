@@ -7,7 +7,8 @@ local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
 
-
+-- Queue this script to re-execute after every teleport
+queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript"))
 
 local ownersURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/main/Users.json"
 
