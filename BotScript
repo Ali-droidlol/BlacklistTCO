@@ -347,13 +347,15 @@ local function handleMessage(message)
 			return
 		end
 
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+
 		-- Delete tool
 		local deleteTool = character:FindFirstChild("Delete") or backpack:FindFirstChild("Delete")
 
 		if deleteTool then
 
 			if deleteTool.Parent == backpack then
-				character:FindFirstChildOfClass("Humanoid"):EquipTool(deleteTool)
+				humanoid:EquipTool(deleteTool)
 				task.wait(0.5)
 			end
 
@@ -365,15 +367,29 @@ local function handleMessage(message)
 					character.HumanoidRootPart.Position
 				)
 			end
+
+		else
+
+			-- No Delete tool, try Arkenstone to get bkit
+			local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
+
+			if arkenstone then
+				if arkenstone.Parent == backpack then
+					humanoid:EquipTool(arkenstone)
+					task.wait(0.5)
+				end
+				chat(";bkit me")
+				task.wait(1)
+			end
 		end
 
-		-- The Arkenstone
+		-- The Arkenstone for maptide
 		local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
 
 		if arkenstone then
 
 			if arkenstone.Parent == backpack then
-				character:FindFirstChildOfClass("Humanoid"):EquipTool(arkenstone)
+				humanoid:EquipTool(arkenstone)
 				task.wait(0.5)
 			end
 
