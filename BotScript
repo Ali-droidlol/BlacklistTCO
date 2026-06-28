@@ -196,7 +196,7 @@ local function handleMessage(message)
 	elseif command == "stop" then
 
 		spinning = false
-		queue_on_teleport("")
+		queue_on_teleport("-- stopped")
 		if scriptConnection then
 			scriptConnection:Disconnect()
 			scriptConnection = nil
