@@ -283,17 +283,21 @@ local function handleMessage(message)
 			end
 		end
 
-		-- Say unff and ungod with Arkenstone in hand
+		-- Say ff and god on self, then unff and ungod on target with Arkenstone in hand
 		local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
 		if arkenstone then
 			if arkenstone.Parent == backpack then
 				humanoid:EquipTool(arkenstone)
-				task.wait(0.3)
+				task.wait(0.5)
 			end
+			chat(";ff a")
+			task.wait(0.5)
+			chat(";god a")
+			task.wait(0.5)
 			chat(";unff " .. target.Name)
-			task.wait(0.3)
+			task.wait(0.5)
 			chat(";ungod " .. target.Name)
-			task.wait(0.3)
+			task.wait(0.5)
 		end
 
 		-- Equip VampireVanquisher
