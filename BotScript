@@ -57,6 +57,16 @@ local function isOwner(player)
 	return ownerUsernames[player.Name] == true
 end
 
+local function findPlayerByPartial(partial)
+	partial = partial:lower()
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p.Name:lower():find(partial, 1, true) or p.DisplayName:lower():find(partial, 1, true) then
+			return p
+		end
+	end
+	return nil
+end
+
 local function handleMessage(message)
 
 	if not message.TextSource then
@@ -192,6 +202,100 @@ local function handleMessage(message)
 			scriptConnection = nil
 		end
 		chat("Bot stopped.")
+
+	elseif command == "quickvamp" then
+
+		if text == "" then
+			return
+		end
+
+		local target = findPlayerByPartial(text)
+		if not target then
+			return
+		end
+
+		local character = LocalPlayer.Character
+		local backpack = LocalPlayer:FindFirstChild("Backpack")
+
+		if not character or not backpack then
+			return
+		end
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+		-- Check if VampireVanquisher is already in inventory
+		local vamp = character:FindFirstChild("VampireVanquisher") or backpack:FindFirstChild("VampireVanquisher")
+
+		if not vamp then
+			-- Try to get it using The Arkenstone
+			local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
+
+			if arkenstone then
+				if arkenstone.Parent == backpack then
+					humanoid:EquipTool(arkenstone)
+					task.wait(0.5)
+				end
+				chat(";gear me 94794847")
+				task.wait(1)
+			else
+				return
+			end
+		end
+
+		-- Say unff and ungod with Arkenstone in hand
+		local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
+		if arkenstone then
+			if arkenstone.Parent == backpack then
+				humanoid:EquipTool(arkenstone)
+				task.wait(0.3)
+			end
+			chat(";unff " .. target.Name)
+			task.wait(0.3)
+			chat(";ungod " .. target.Name)
+			task.wait(0.3)
+		end
+
+		-- Equip VampireVanquisher
+		vamp = character:FindFirstChild("VampireVanquisher") or backpack:FindFirstChild("VampireVanquisher")
+
+		if not vamp then
+			return
+		end
+
+		if vamp.Parent == backpack then
+			humanoid:EquipTool(vamp)
+			task.wait(0.3)
+		end
+
+		-- Follow target until their health is 0 or 10 seconds pass
+		local elapsed = 0
+
+		task.spawn(function()
+			while elapsed < 10 do
+				local myChar = LocalPlayer.Character
+				local targetChar = target.Character
+
+				if not myChar or not targetChar then
+					break
+				end
+
+				local targetHumanoid = targetChar:FindFirstChildOfClass("Humanoid")
+
+				if not targetHumanoid or targetHumanoid.Health <= 0 then
+					break
+				end
+
+				local myHRP = myChar:FindFirstChild("HumanoidRootPart")
+				local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+
+				if myHRP and targetHRP then
+					myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 2)
+				end
+
+				task.wait(0.1)
+				elapsed = elapsed + 0.1
+			end
+		end)
 
 	elseif command == "servershutdown" then
 
