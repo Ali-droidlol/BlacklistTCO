@@ -342,6 +342,34 @@ local function handleMessage(message)
 			end
 		end)
 
+	elseif command == "disablebkit" or command == "dbk" then
+
+		local character = LocalPlayer.Character
+		local backpack = LocalPlayer:FindFirstChild("Backpack")
+
+		if not character or not backpack then
+			return
+		end
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local deleteTool = character:FindFirstChild("Delete") or backpack:FindFirstChild("Delete")
+
+		if deleteTool then
+			if deleteTool.Parent == backpack then
+				humanoid:EquipTool(deleteTool)
+				task.wait(0.5)
+			end
+
+			local dtool = character:FindFirstChild("Delete")
+
+			if dtool and dtool:FindFirstChild("Script") then
+				dtool.Script.Event:FireServer(
+					game.ReplicatedStorage.Brick,
+					character.HumanoidRootPart.Position
+				)
+			end
+		end
+
 	elseif command == "servershutdown" or command == "ssh" then
 
 		local character = LocalPlayer.Character
