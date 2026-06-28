@@ -157,7 +157,7 @@ local function handleMessage(message)
 
 	elseif command == "credits" then
 
-		chat("Alt Bot V2 Private - Hot_Dogn")
+		chat("Alt Bot V4.5 Private - Hot_Dogn")
 
 	elseif command == "reset" then
 
@@ -207,6 +207,59 @@ local function handleMessage(message)
 	elseif command == "unspin" then
 
 		spinning = false
+
+	elseif command == "freeze" or command == "fr" then
+
+		local character = LocalPlayer.Character
+
+		if character then
+			local hrp = character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				hrp.Anchored = true
+			end
+		end
+
+	elseif command == "unfreeze" or command == "ufr" then
+
+		local character = LocalPlayer.Character
+
+		if character then
+			local hrp = character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				hrp.Anchored = false
+			end
+		end
+
+	elseif command == "dance" or command == "d" then
+
+		pcall(function()
+			local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+			if hum then
+				hum.WalkSpeed = 0
+				local animator = hum:FindFirstChildOfClass("Animator")
+				if animator then
+					local anim = Instance.new("Animation")
+					anim.AnimationId = "rbxassetid://507770239"
+					local track = animator:LoadAnimation(anim)
+					track:Play()
+				end
+			end
+		end)
+
+	elseif command == "stopdance" or command == "sd" then
+
+		pcall(function()
+			local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+			if hum then
+				hum.WalkSpeed = 16
+				local animator = hum:FindFirstChildOfClass("Animator")
+				if animator then
+					for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+						track:Stop()
+					end
+				end
+			end
+		end)
 
 	elseif command == "rejoin" or command == "rj" then
 
