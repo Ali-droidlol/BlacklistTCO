@@ -8,9 +8,8 @@ local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = Players.LocalPlayer
 local spinning = false
 local scriptConnection = nil
-
--- Queue this script to re-execute after every teleport
-queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript"))
+local following = false
+local followTarget = nil
 
 local ownersURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/main/Users.json"
 
@@ -67,6 +66,26 @@ local function findPlayerByPartial(partial)
 	return nil
 end
 
+-- Follow loop
+task.spawn(function()
+	while true do
+		if following and followTarget then
+			local myChar = LocalPlayer.Character
+			local targetChar = followTarget.Character
+
+			if myChar and targetChar then
+				local myHRP = myChar:FindFirstChild("HumanoidRootPart")
+				local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+
+				if myHRP and targetHRP then
+					myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
+				end
+			end
+		end
+		task.wait(0.1)
+	end
+end)
+
 local function handleMessage(message)
 
 	if not message.TextSource then
@@ -99,7 +118,7 @@ local function handleMessage(message)
 			chat(text)
 		end
 
-	elseif command == "teleport" then
+	elseif command == "teleport" or command == "tp" then
 
 		local myChar = LocalPlayer.Character
 		local ownerChar = player.Character
@@ -120,7 +139,7 @@ local function handleMessage(message)
 			chat(".fling " .. text)
 		end
 
-	elseif command == "glaze" then
+	elseif command == "glaze" or command == "glz" then
 
 		if text ~= "" then
 			chat(text .. " is the best")
@@ -189,21 +208,43 @@ local function handleMessage(message)
 
 		spinning = false
 
-	elseif command == "rejoin" then
+	elseif command == "rejoin" or command == "rj" then
 
+		queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript"))
+		task.wait(0.5)
 		TeleportService:Teleport(game.PlaceId, LocalPlayer)
 
 	elseif command == "stop" then
 
 		spinning = false
-		queue_on_teleport("-- stopped")
+		following = false
+		followTarget = nil
 		if scriptConnection then
 			scriptConnection:Disconnect()
 			scriptConnection = nil
 		end
 		chat("Bot stopped.")
 
-	elseif command == "quickvamp" then
+	elseif command == "follow" or command == "f" then
+
+		if text == "" then
+			return
+		end
+
+		local target = findPlayerByPartial(text)
+		if not target then
+			return
+		end
+
+		followTarget = target
+		following = true
+
+	elseif command == "unfollow" or command == "uf" then
+
+		following = false
+		followTarget = nil
+
+	elseif command == "quickvamp" or command == "qv" then
 
 		if text == "" then
 			return
@@ -297,7 +338,7 @@ local function handleMessage(message)
 			end
 		end)
 
-	elseif command == "servershutdown" then
+	elseif command == "servershutdown" or command == "ssh" then
 
 		local character = LocalPlayer.Character
 		local backpack = LocalPlayer:FindFirstChild("Backpack")
