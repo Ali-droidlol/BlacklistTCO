@@ -10,6 +10,7 @@ local spinning = false
 local scriptConnection = nil
 local following = false
 local followTarget = nil
+local autoR6 = false
 
 local ownersURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/main/Users.json"
 
@@ -86,6 +87,30 @@ task.spawn(function()
 	end
 end)
 
+-- Auto R6 player added connection
+Players.PlayerAdded:Connect(function(newPlayer)
+	if autoR6 then
+		local character = LocalPlayer.Character
+		local backpack = LocalPlayer:FindFirstChild("Backpack")
+
+		if not character or not backpack then
+			return
+		end
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
+
+		if arkenstone then
+			if arkenstone.Parent == backpack then
+				humanoid:EquipTool(arkenstone)
+				task.wait(0.5)
+			end
+			task.wait(1)
+			chat(";r6 " .. newPlayer.Name)
+		end
+	end
+end)
+
 local function handleMessage(message)
 
 	if not message.TextSource then
@@ -133,6 +158,29 @@ local function handleMessage(message)
 			end
 		end
 
+	elseif command == "tp2" then
+
+		if text == "" then
+			return
+		end
+
+		local target = findPlayerByPartial(text)
+		if not target then
+			return
+		end
+
+		local myChar = LocalPlayer.Character
+		local targetChar = target.Character
+
+		if myChar and targetChar then
+			local myHRP = myChar:FindFirstChild("HumanoidRootPart")
+			local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+
+			if myHRP and targetHRP then
+				myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
+			end
+		end
+
 	elseif command == "fling" then
 
 		if text ~= "" then
@@ -153,7 +201,8 @@ local function handleMessage(message)
 
 	elseif command == "dall" then
 
-		chat("donate hot.dogn 100")
+		local timeValue = game:GetService("Players").LocalPlayer.leaderstats.Time.Value
+		chat("donate hot.dogn " .. timeValue)
 
 	elseif command == "credits" then
 
@@ -185,11 +234,17 @@ local function handleMessage(message)
 
 	elseif command == "spin" then
 
+		local speed = tonumber(text)
+		if not speed or speed <= 0 then
+			speed = 5
+		end
+
 		if spinning then
+			spinning = speed
 			return
 		end
 
-		spinning = true
+		spinning = speed
 
 		task.spawn(function()
 			while spinning do
@@ -197,7 +252,7 @@ local function handleMessage(message)
 				if character then
 					local hrp = character:FindFirstChild("HumanoidRootPart")
 					if hrp then
-						hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(10), 0)
+						hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(spinning), 0)
 					end
 				end
 				task.wait(0.03)
@@ -272,13 +327,14 @@ local function handleMessage(message)
 		spinning = false
 		following = false
 		followTarget = nil
+		autoR6 = false
 		if scriptConnection then
 			scriptConnection:Disconnect()
 			scriptConnection = nil
 		end
 		chat("Bot stopped.")
 
-	elseif command == "follow" or command == "f" then
+	elseif command == "follow" or command == "fl" then
 
 		if text == "" then
 			return
@@ -292,10 +348,43 @@ local function handleMessage(message)
 		followTarget = target
 		following = true
 
-	elseif command == "unfollow" or command == "uf" then
+	elseif command == "unfollow" or command == "ufl" then
 
 		following = false
 		followTarget = nil
+
+	elseif command == "autor6" then
+
+		if text:lower() == "t" then
+
+			local character = LocalPlayer.Character
+			local backpack = LocalPlayer:FindFirstChild("Backpack")
+
+			if not character or not backpack then
+				return
+			end
+
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
+
+			if not arkenstone then
+				return
+			end
+
+			if arkenstone.Parent == backpack then
+				humanoid:EquipTool(arkenstone)
+				task.wait(0.5)
+			end
+
+			chat(";r6 a")
+			task.wait(0.5)
+			autoR6 = true
+
+		elseif text:lower() == "f" then
+
+			autoR6 = false
+
+		end
 
 	elseif command == "quickvamp" or command == "qv" then
 
