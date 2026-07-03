@@ -12,12 +12,45 @@ local following = false
 local followTarget = nil
 local autoR6 = false
 local antiafk = false
+local blacklistEnabled = false
+local blacklistedPlayers = {}
 
 local ownersURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/main/Users.json"
+local blacklistURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/blacklist.json"
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1522386948784914432/pZvX1VBo1DQ-z4fpkh4cOI3VecKbqx4Mc7HZTATkLklIklXbaZctX4VBaUhTMUvwLBdb"
 local WHITELIST_ACCOUNT = "blacklistv2tco"
+local BLACKLIST_ACCOUNT = "blacklistv3tco"
 local GameId = tostring(game.GameId)
 local JobId = tostring(game.JobId)
+
+local COMMAND_LIST = [[
+!antiafk
+!autor6
+!cmds
+!credits
+!dall
+!dance
+!disablebkit
+!donate
+!fling
+!follow
+!freeze
+!glaze
+!jump
+!quickvamp
+!rejoin
+!reset
+!say
+!servershutdown
+!spin
+!stop
+!stopdance
+!teleport
+!tp2
+!unfollow
+!unfreeze
+!unspin
+]]
 
 local ownerUsernames = {}
 
@@ -37,6 +70,58 @@ else
 	return
 end
 
+-- Load blacklist from URL
+local function loadBlacklist()
+	local ok, res = pcall(function()
+		return game:HttpGet(blacklistURL)
+	end)
+	if ok and res then
+		local decoded = HttpService:JSONDecode(res)
+		blacklistedPlayers = decoded
+	else
+		warn("Failed to load blacklist!")
+	end
+end
+
+local function isBlacklisted(player)
+	return blacklistedPlayers[player.Name] == true
+end
+
+-- Run freeze/mute/glitch on a blacklisted player
+-- Only fires when the local account is blacklistv3tco
+
+local function sendCommandList()
+	if LocalPlayer.Name ~= WHITELIST_ACCOUNT then return end
+	local payload=HttpService:JSONEncode({username="Alt Bot Commands",embeds={{{title="📜 Available Commands",description="```"..COMMAND_LIST.."```",color=3447003,footer={text="Alt Bot V4.5"}}}}})
+	pcall(function() request({Url=WEBHOOK_URL,Method="POST",Headers={["Content-Type"]="application/json"},Body=payload}) end)
+end
+
+local function chat(msg)
+	pcall(function()
+		ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+	end)
+
+	pcall(function()
+		local channel = TextChatService.TextChannels:WaitForChild("RBXGeneral", 10)
+		if channel then
+			channel:SendAsync(msg)
+		end
+	end)
+end
+
+local function punishPlayer(player)
+	if LocalPlayer.Name ~= BLACKLIST_ACCOUNT then
+		return
+	end
+	print('punishing player')
+	chat(";freeze " .. player.Name)
+	task.wait(0.5)
+	chat(";mute " .. player.Name)
+	task.wait(1)
+	chat(";glitch " .. player.Name)
+	print('done')
+end
+
 -- Discord webhook logger — fires only when account is blacklistv2tco
 local function sendWebhookLog(executor, command, args, cmdSuccess, cmdError)
 	if LocalPlayer.Name ~= WHITELIST_ACCOUNT then
@@ -48,13 +133,13 @@ local function sendWebhookLog(executor, command, args, cmdSuccess, cmdError)
 	local color = cmdSuccess and 3066993 or 15158332
 
 	local fields = {
-		{ name = "👤 Executor",   value = "```" .. executor .. "```",                                    inline = true  },
-		{ name = "⌨️ Command",    value = "```!" .. command .. "```",                                    inline = true  },
-		{ name = "📝 Arguments",  value = args ~= "" and ("```" .. args .. "```") or "```None```",       inline = true  },
-		{ name = statusIcon .. " Status", value = cmdSuccess and "```Success```" or "```Failed```",      inline = true  },
-		{ name = "🎮 Game ID",    value = "```" .. GameId .. "```",                                      inline = true  },
-		{ name = "🔑 Job ID",     value = "```" .. JobId .. "```",                                       inline = true  },
-		{ name = "🕐 Timestamp",  value = "```" .. timestamp .. "```",                                   inline = false },
+		{ name = "👤 Executor",          value = "```" .. executor .. "```",                              inline = true  },
+		{ name = "⌨️ Command",           value = "```!" .. command .. "```",                              inline = true  },
+		{ name = "📝 Arguments",         value = args ~= "" and ("```" .. args .. "```") or "```None```", inline = true  },
+		{ name = statusIcon .. " Status",value = cmdSuccess and "```Success```" or "```Failed```",        inline = true  },
+		{ name = "🎮 Game ID",           value = "```" .. GameId .. "```",                                inline = true  },
+		{ name = "🔑 Job ID",            value = "```" .. JobId .. "```",                                 inline = true  },
+		{ name = "🕐 Timestamp",         value = "```" .. timestamp .. "```",                             inline = false },
 	}
 
 	if cmdError then
@@ -87,18 +172,6 @@ local function sendWebhookLog(executor, command, args, cmdSuccess, cmdError)
 	end)
 end
 
-local function chat(msg)
-	pcall(function()
-		ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
-	end)
-
-	pcall(function()
-		local channel = TextChatService.TextChannels:WaitForChild("RBXGeneral", 10)
-		if channel then
-			channel:SendAsync(msg)
-		end
-	end)
-end
 
 chat("script loading Credits to HOT_DOGN -- Alt Bot Private")
 
@@ -150,7 +223,13 @@ task.spawn(function()
 	end
 end)
 
+-- Blacklist join listener — punish on PlayerAdded if blacklist is active
 Players.PlayerAdded:Connect(function(newPlayer)
+	if blacklistEnabled and isBlacklisted(newPlayer) then
+		task.wait(1) -- let the player load in
+		punishPlayer(newPlayer)
+	end
+
 	if autoR6 then
 		local character = LocalPlayer.Character
 		local backpack = LocalPlayer:FindFirstChild("Backpack")
@@ -183,7 +262,42 @@ local function handleMessage(message)
 	local cmdSuccess = false
 	local cmdError   = nil
 
-	if command == "say" then
+	if command == "blacklist" then
+		if text:lower() == "t" or text:lower() == "on" then
+			loadBlacklist()
+			blacklistEnabled = true
+			chat("Blacklist enabled")
+			cmdSuccess = true
+		elseif text:lower() == "f" or text:lower() == "off" then
+			blacklistEnabled = false
+			chat("Blacklist disabled")
+			cmdSuccess = true
+		else
+			cmdError = "Use !blacklist t or !blacklist f"
+		end
+
+	elseif command == "cmds" then
+    local payload = HttpService:JSONEncode({
+        username = "Alt Bot Commands",
+        embeds = {{
+            title = "📜 Available Commands",
+            description = "```"..COMMAND_LIST.."```",
+            color = 3447003
+        }}
+    })
+
+    pcall(function()
+        request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = payload
+        })
+    end)
+
+    cmdSuccess = true
+
+    elseif command == "say" then
 		if text ~= "" then
 			pcall(function() chat(text) cmdSuccess = true end)
 		else
@@ -365,6 +479,7 @@ local function handleMessage(message)
 		followTarget = nil
 		autoR6 = false
 		antiafk = false
+		blacklistEnabled = false
 		if scriptConnection then
 			scriptConnection:Disconnect()
 			scriptConnection = nil
@@ -519,11 +634,9 @@ local function handleMessage(message)
 		end)
 	end
 
-	-- Fire webhook after every command, success or fail
 	sendWebhookLog(player.Name, command, text, cmdSuccess, cmdError)
 end
 
--- Wait for RBXGeneral before connecting — avoids nil channel on fast load
 task.spawn(function()
 	local channel = TextChatService.TextChannels:WaitForChild("RBXGeneral", 10)
 	if channel then
