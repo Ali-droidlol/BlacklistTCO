@@ -19,10 +19,10 @@ local ownersURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/m
 local blacklistURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/blacklist.json"
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1522386948784914432/pZvX1VBo1DQ-z4fpkh4cOI3VecKbqx4Mc7HZTATkLklIklXbaZctX4VBaUhTMUvwLBdb"
 local WHITELIST_ACCOUNT = "blacklistv2tco"
-local BLACKLIST_ACCOUNT = "blacklistv3tco"
+local BLACKLIST_ACCOUNT = "blacklistv2tco"
 local GameId = tostring(game.GameId)
 local JobId = tostring(game.JobId)
-local GITHUB_COMMAND_URL = "https://raw.githubusercontent.com/Ali-droidlol/commands/refs/heads/main/commands.json"
+local GITHUB_COMMAND_URL = "http://localhost:3000/command"
 local lastCommandId = nil
 
 local COMMAND_LIST = [[
