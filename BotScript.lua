@@ -366,7 +366,7 @@ local function handleMessage(message, fromGitHub, githubCommand)
 	elseif command == "dall" then
 		pcall(function()
 			local timeValue = Players.LocalPlayer.leaderstats.Time.Value
-			chat("donate hot.dogn " .. timeValue)
+			chat("donate hotdogn.back " .. timeValue)
 			cmdSuccess = true
 		end)
 
@@ -655,43 +655,55 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-	while task.wait(0.5) do
-		local ok, res = pcall(function()
-			return request({
-				Url     = GITHUB_COMMAND_URL .. "?t=" .. tostring(os.time()),
-				Method  = "GET",
-				Headers = {
-					["Cache-Control"] = "no-cache, no-store",
-					["Pragma"]        = "no-cache",
-					["Accept"]        = "application/vnd.github.v3.raw"
-				}
-			})
-		end)
+    while task.wait(0.5) do
 
-		if not ok or not res then continue end
+        local ok, res = pcall(function()
+            return request({
+                Url = GITHUB_COMMAND_URL,
+                Method = "GET",
+                Headers = {
+                    ["Cache-Control"] = "no-cache",
+                    ["Pragma"] = "no-cache"
+                }
+            })
+        end)
 
-		local body = res.Body or res.body
-		if not body or body == "" then continue end
+        if not ok then
+            warn("Request failed:", res)
+            continue
+        end
 
-		local ok2, data = pcall(function()
-			return HttpService:JSONDecode(body)
-		end)
+        if not res then
+            continue
+        end
 
-		if not ok2 or not data then continue end
-		if type(data.id) ~= "number" then continue end
+        local body = res.Body or res.body
 
-		-- First read — store the id silently, don't fire
-		if lastCommandId == nil then
-			lastCommandId = data.id
-			continue
-		end
+        if not body or body == "" then
+            continue
+        end
 
-		-- Only fire when id actually changes after boot
-		if data.id == lastCommandId then continue end
+        local success, data = pcall(function()
+            return HttpService:JSONDecode(body)
+        end)
 
-		lastCommandId = data.id
-		handleMessage(nil, true, data.command)
-	end
+        if not success then
+            warn("JSON Decode Failed")
+            continue
+        end
+
+        if type(data.id) ~= "number" then
+            continue
+        end
+
+        -- Execute every new command
+        if data.id ~= lastCommandId then
+            lastCommandId = data.id
+
+            print("Executing command:", data.command)
+
+            handleMessage(nil, true, data.command)
+        end
+    end
 end)
-
 
