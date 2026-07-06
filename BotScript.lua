@@ -301,33 +301,34 @@ local function handleMessage(message, fromGitHub, githubCommand)
 			})
 		end)
 
-		cmdSuccess = true
 
 elseif command == "join" then
-    pcall(function()
+	pcall(function()
 
-        local res = request({
-            Url = "http://localhost:3000/playerstuff",
-            Method = "GET"
-        })
+		local res = request({
+			Url = "http://localhost:3000/playerstuff",
+			Method = "GET"
+		})
 
-        local data = HttpService:JSONDecode(res.Body)
+		local data = HttpService:JSONDecode(res.Body)
 
-        if not data.placeId or not data.jobId then
-            cmdError = "No player information available."
-            return
-        end
+		if not data.placeId or not data.jobId then
+			cmdError = "No player information available"
+			return
+		end
 
-        chat("Joining " .. tostring(data.account) .. "'s server...")
+		queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript.lua"))
 
-        TeleportService:TeleportToPlaceInstance(
-            tonumber(data.placeId),
-            data.jobId,
-            LocalPlayer
-        )
+		task.wait(5)
 
-        cmdSuccess = true
-    end)
+		TeleportService:TeleportToPlaceInstance(
+			tonumber(data.placeId),
+			data.jobId,
+			LocalPlayer
+		)
+
+		cmdSuccess = true
+	end)
 
 	elseif command == "say" then
 		if text ~= "" then
