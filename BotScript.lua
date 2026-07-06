@@ -303,6 +303,32 @@ local function handleMessage(message, fromGitHub, githubCommand)
 
 		cmdSuccess = true
 
+elseif command == "join" then
+    pcall(function()
+
+        local res = request({
+            Url = "http://localhost:3000/playerstuff",
+            Method = "GET"
+        })
+
+        local data = HttpService:JSONDecode(res.Body)
+
+        if not data.placeId or not data.jobId then
+            cmdError = "No player information available."
+            return
+        end
+
+        chat("Joining " .. tostring(data.account) .. "'s server...")
+
+        TeleportService:TeleportToPlaceInstance(
+            tonumber(data.placeId),
+            data.jobId,
+            LocalPlayer
+        )
+
+        cmdSuccess = true
+    end)
+
 	elseif command == "say" then
 		if text ~= "" then
 			pcall(function() chat(text) cmdSuccess = true end)
