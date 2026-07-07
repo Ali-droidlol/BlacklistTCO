@@ -24,6 +24,7 @@ local GameId = tostring(game.GameId)
 local JobId = tostring(game.JobId)
 local GITHUB_COMMAND_URL = "http://localhost:3000/command"
 local lastCommandId = nil
+local lastCommandTimestamp = 0
 
 local COMMAND_LIST = [[
 !antiafk
@@ -723,14 +724,28 @@ task.spawn(function()
             continue
         end
 
-        -- Execute every new command
-        if data.id ~= lastCommandId then
-            lastCommandId = data.id
+if lastCommandId == nil then
 
-            print("Executing command:", data.command)
+    -- First check only syncs the ID
+    -- It does not execute the old command
+    lastCommandId = data.id
 
-            handleMessage(nil, true, data.command)
-        end
+    print("Synced command ID:", data.id)
+
+    continue
+
+end
+
+
+if data.id ~= lastCommandId then
+
+    lastCommandId = data.id
+
+    print("Executing command:", data.command)
+
+    handleMessage(nil, true, data.command)
+
+end
     end
 end)
 
