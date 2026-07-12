@@ -53,6 +53,7 @@ local COMMAND_LIST = [[
 !unfollow
 !unfreeze
 !unspin
+!fpsmode
 ]]
 
 local ownerUsernames = {}
@@ -373,6 +374,27 @@ elseif command == "join" then
 				end
 			end)
 		end
+
+		elseif command == "fpsmode" then
+	if text:lower() == "t" or text:lower() == "on" then
+		pcall(function()
+		print("disabling 3d rendering")
+			game:GetService("RunService"):Set3dRenderingEnabled(false)
+			setfpscap(15)
+			cmdSuccess = true
+			chat("RAM saving mode enabled")
+		end)
+	elseif text:lower() == "f" or text:lower() == "off" then
+		pcall(function()
+		print("disabling3d rendering")
+			game:GetService("RunService"):Set3dRenderingEnabled(true)
+			setfpscap(240)
+			cmdSuccess = true
+			chat("RAM saving mode disabled")
+		end)
+	else
+		cmdError = "Use !fpsmode t or !fpsmode f"
+	end
 
 	elseif command == "fling" then
 		if text ~= "" then
