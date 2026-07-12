@@ -1,3 +1,10 @@
+-- Prevent double execution on the same LocalPlayer
+if _G.BotScriptLoaded then
+	warn("Player Has already executed the script")
+	return
+end
+_G.BotScriptLoaded = true
+
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,6 +21,7 @@ local autoR6 = false
 local antiafk = false
 local blacklistEnabled = false
 local blacklistedPlayers = {}
+local chatChannel = nil
 
 local ownersURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/main/Users.json"
 local blacklistURL = "https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/blacklist.json"
@@ -25,42 +33,45 @@ local JobId = tostring(game.JobId)
 local GITHUB_COMMAND_URL = "http://localhost:3000/command"
 local lastCommandId = nil
 local lastCommandTimestamp = 0
+local pollerRunning = true
 
 local COMMAND_LIST = [[
-!antiafk
-!autor6
+!antiafk [t/f]
+!autor6 [t/f]
+!blacklist [t/f]
 !cmds
 !credits
 !dall
 !dance
 !disablebkit
-!donate
-!fling
-!follow
+!donate [amount]
+!fling [player]
+!follow [player]
+!fpsmode [t/f]
 !freeze
-!glaze
+!glaze [player]
+!join
 !jump
-!quickvamp
+!quickvamp [player]
 !rejoin
 !reset
-!say
+!say [message]
 !servershutdown
-!spin
+!spin [speed]
 !stop
 !stopdance
 !teleport
-!tp2
+!tp2 [player]
 !unfollow
 !unfreeze
 !unspin
-!fpsmode
 ]]
 
 local ownerUsernames = {}
 
 UserInputService.WindowFocusReleased:Connect(function()
 	task.wait(0.1)
-	game:GetService("ReplicatedStorage"):WaitForChild("System"):FireServer("Focused")
+	ReplicatedStorage:WaitForChild("System"):FireServer("Focused")
 end)
 
 local success, response = pcall(function()
@@ -71,17 +82,21 @@ if success then
 	ownerUsernames = HttpService:JSONDecode(response)
 else
 	warn("Failed to load owners!")
+	_G.BotScriptLoaded = nil
 	return
 end
 
--- Load blacklist from URL
 local function loadBlacklist()
 	local ok, res = pcall(function()
 		return game:HttpGet(blacklistURL)
 	end)
 	if ok and res then
-		local decoded = HttpService:JSONDecode(res)
-		blacklistedPlayers = decoded
+		blacklistedPlayers = HttpService:JSONDecode(res)
+		local count = 0
+		for _, val in pairs(blacklistedPlayers) do
+			if val == true then count = count + 1 end
+		end
+		print("Blacklist loaded: " .. count .. " active entries")
 	else
 		warn("Failed to load blacklist!")
 	end
@@ -91,104 +106,73 @@ local function isBlacklisted(player)
 	return blacklistedPlayers[player.Name] == true
 end
 
--- Run freeze/mute/glitch on a blacklisted player
--- Only fires when the local account is blacklistv3tco
-
-local function sendCommandList()
-	if LocalPlayer.Name ~= WHITELIST_ACCOUNT then return end
-	local payload=HttpService:JSONEncode({username="Alt Bot Commands",embeds={{{title="📜 Available Commands",description="```"..COMMAND_LIST.."```",color=3447003,footer={text="Alt Bot V4.5"}}}}})
-	pcall(function() request({Url=WEBHOOK_URL,Method="POST",Headers={["Content-Type"]="application/json"},Body=payload}) end)
-end
-
 local function chat(msg)
-	-- TextChatService first — correct path for modern servers
-	local sent = false
-	pcall(function()
-		local channel = TextChatService.TextChannels:WaitForChild("RBXGeneral", 10)
-		if channel then
-			channel:SendAsync(msg)
-			sent = true
-		end
-	end)
-
-	-- Legacy fallback only if TextChatService path failed
-	if not sent then
+	if chatChannel then
+		pcall(function() chatChannel:SendAsync(msg) end)
+	else
 		pcall(function()
 			ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
 		end)
 	end
 end
 
-
 local function punishPlayer(player)
-	if LocalPlayer.Name ~= BLACKLIST_ACCOUNT then
-		return
+	if LocalPlayer.Name ~= BLACKLIST_ACCOUNT then return end
+	local character = LocalPlayer.Character
+	local backpack  = LocalPlayer:FindFirstChild("Backpack")
+	if not character or not backpack then return end
+	local humanoid   = character:FindFirstChildOfClass("Humanoid")
+	local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
+	if arkenstone then
+		if arkenstone.Parent == backpack then
+			humanoid:EquipTool(arkenstone)
+			task.wait(0.5)
+		end
 	end
-	print('punishing player')
+	print("punishing player")
 	chat(";freeze " .. player.Name)
 	task.wait(0.5)
 	chat(";mute " .. player.Name)
 	task.wait(1)
 	chat(";glitch " .. player.Name)
-	print('done')
+	print("done")
 end
 
--- Discord webhook logger — fires only when account is blacklistv2tco
 local function sendWebhookLog(executor, command, args, cmdSuccess, cmdError)
-	if LocalPlayer.Name ~= WHITELIST_ACCOUNT then
-		return
-	end
+	if LocalPlayer.Name ~= WHITELIST_ACCOUNT then return end
 
 	local timestamp = os.date("!%Y-%m-%d %H:%M:%S UTC")
 	local statusIcon = cmdSuccess and "✅" or "❌"
 	local color = cmdSuccess and 3066993 or 15158332
 
 	local fields = {
-		{ name = "👤 Executor",          value = "```" .. executor .. "```",                              inline = true  },
-		{ name = "⌨️ Command",           value = "```!" .. command .. "```",                              inline = true  },
-		{ name = "📝 Arguments",         value = args ~= "" and ("```" .. args .. "```") or "```None```", inline = true  },
-		{ name = statusIcon .. " Status",value = cmdSuccess and "```Success```" or "```Failed```",        inline = true  },
-		{ name = "🎮 Game ID",           value = "```" .. GameId .. "```",                                inline = true  },
-		{ name = "🔑 Job ID",            value = "```" .. JobId .. "```",                                 inline = true  },
-		{ name = "🕐 Timestamp",         value = "```" .. timestamp .. "```",                             inline = false },
+		{ name = "👤 Executor",           value = "```" .. executor .. "```",                              inline = true  },
+		{ name = "⌨️ Command",            value = "```!" .. command .. "```",                              inline = true  },
+		{ name = "📝 Arguments",          value = args ~= "" and ("```" .. args .. "```") or "```None```", inline = true  },
+		{ name = statusIcon .. " Status", value = cmdSuccess and "```Success```" or "```Failed```",        inline = true  },
+		{ name = "🎮 Game ID",            value = "```" .. GameId .. "```",                                inline = true  },
+		{ name = "🔑 Job ID",             value = "```" .. JobId .. "```",                                 inline = true  },
+		{ name = "🕐 Timestamp",          value = "```" .. timestamp .. "```",                             inline = false },
 	}
 
 	if cmdError then
-		table.insert(fields, {
-			name  = "⚠️ Error",
-			value = "```" .. cmdError .. "```",
-			inline = false
-		})
+		table.insert(fields, { name = "⚠️ Error", value = "```" .. cmdError .. "```", inline = false })
 	end
 
 	local payload = HttpService:JSONEncode({
 		username = "Alt Bot Logger",
-		embeds = {
-			{
-				title  = statusIcon .. " Command Executed",
-				color  = color,
-				fields = fields,
-				footer = { text = "blacklistv2tco • Alt Bot V4.5" }
-			}
-		}
+		embeds = {{
+			title  = statusIcon .. " Command Executed",
+			color  = color,
+			fields = fields,
+			footer = { text = "blacklistv2tco • Alt Bot V4.5" }
+		}}
 	})
 
 	pcall(function()
-		request({
-			Url     = WEBHOOK_URL,
-			Method  = "POST",
-			Headers = { ["Content-Type"] = "application/json" },
-			Body    = payload
-		})
+		request({ Url = WEBHOOK_URL, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = payload })
 	end)
 end
-
-
-chat("script loading Credits to HOT_DOGN -- Alt Bot Private")
-
-pcall(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"))()
-end)
 
 local function isOwner(player)
 	return ownerUsernames[player.Name] == true
@@ -210,9 +194,7 @@ task.spawn(function()
 	while true do
 		task.wait(600)
 		if antiafk then
-			pcall(function()
-				VirtualUser:ClickButton1(Vector2.new(0, 0))
-			end)
+			pcall(function() VirtualUser:ClickButton1(Vector2.new(0, 0)) end)
 		end
 	end
 end)
@@ -220,10 +202,10 @@ end)
 task.spawn(function()
 	while true do
 		if following and followTarget then
-			local myChar = LocalPlayer.Character
+			local myChar     = LocalPlayer.Character
 			local targetChar = followTarget.Character
 			if myChar and targetChar then
-				local myHRP = myChar:FindFirstChild("HumanoidRootPart")
+				local myHRP     = myChar:FindFirstChild("HumanoidRootPart")
 				local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
 				if myHRP and targetHRP then
 					myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
@@ -234,24 +216,20 @@ task.spawn(function()
 	end
 end)
 
--- Blacklist join listener — punish on PlayerAdded if blacklist is active
 Players.PlayerAdded:Connect(function(newPlayer)
 	if blacklistEnabled and isBlacklisted(newPlayer) then
-		task.wait(1) -- let the player load in
+		task.wait(1)
 		punishPlayer(newPlayer)
 	end
 
 	if autoR6 then
 		local character = LocalPlayer.Character
-		local backpack = LocalPlayer:FindFirstChild("Backpack")
+		local backpack  = LocalPlayer:FindFirstChild("Backpack")
 		if not character or not backpack then return end
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local humanoid   = character:FindFirstChildOfClass("Humanoid")
 		local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
 		if arkenstone then
-			if arkenstone.Parent == backpack then
-				humanoid:EquipTool(arkenstone)
-				task.wait(0.5)
-			end
+			if arkenstone.Parent == backpack then humanoid:EquipTool(arkenstone) task.wait(0.5) end
 			task.wait(1)
 			chat(";r6 " .. newPlayer.Name)
 		end
@@ -259,78 +237,64 @@ Players.PlayerAdded:Connect(function(newPlayer)
 end)
 
 local function handleMessage(message, fromGitHub, githubCommand)
-
 	local player
 	local msg
 
 	if fromGitHub then
 		player = LocalPlayer
-		msg = "!" .. githubCommand
+		msg    = "!" .. githubCommand
 	else
 		if not message.TextSource then return end
-
 		player = Players:GetPlayerByUserId(message.TextSource.UserId)
 		if not player then return end
 		if not isOwner(player) then return end
-
 		msg = tostring(message.Text)
 	end
 
 	local command, text = msg:match("^!(%w+)%s*(.*)$")
 	if not command then return end
 
+	command = string.lower(command)
 	local cmdSuccess = false
-	local cmdError = nil
+	local cmdError   = nil
 
-	-- COMMANDS START HERE
-
-	if command == "cmds" then
-		local payload = HttpService:JSONEncode({
-			username = "Alt Bot Commands",
-			embeds = {{
-				title = "📜 Available Commands",
-				description = "```"..COMMAND_LIST.."```",
-				color = 3447003
-			}}
-		})
-
-		pcall(function()
-			request({
-				Url = WEBHOOK_URL,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = payload
-			})
-		end)
-
-
-elseif command == "join" then
-	pcall(function()
-
-		local res = request({
-			Url = "http://localhost:3000/playerstuff",
-			Method = "GET"
-		})
-
-		local data = HttpService:JSONDecode(res.Body)
-
-		if not data.placeId or not data.jobId then
-			cmdError = "No player information available"
-			return
+	if command == "blacklist" then
+		if text:lower() == "t" or text:lower() == "on" then
+			loadBlacklist()
+			blacklistEnabled = true
+			chat("Blacklist enabled")
+			cmdSuccess = true
+		elseif text:lower() == "f" or text:lower() == "off" then
+			blacklistEnabled = false
+			chat("Blacklist disabled")
+			cmdSuccess = true
+		else
+			cmdError = "Use !blacklist t or !blacklist f"
 		end
 
-		queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript.lua"))
-
-		task.wait(5)
-
-		TeleportService:TeleportToPlaceInstance(
-			tonumber(data.placeId),
-			data.jobId,
-			LocalPlayer
-		)
-
+	elseif command == "cmds" then
+		local payload = HttpService:JSONEncode({
+			username = "Alt Bot Commands",
+			embeds = {{ title = "📜 Available Commands", description = "```" .. COMMAND_LIST .. "```", color = 3447003, footer = { text = "Alt Bot V4.5" } }}
+		})
+		pcall(function()
+			request({ Url = WEBHOOK_URL, Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = payload })
+		end)
 		cmdSuccess = true
-	end)
+
+	elseif command == "join" then
+		pcall(function()
+			local res = request({ Url = "http://localhost:3000/playerstuff", Method = "GET" })
+			local data = HttpService:JSONDecode(res.Body)
+			if not data.placeId or not data.jobId then
+				cmdError = "No player information available"
+				return
+			end
+			queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript.lua"))
+			task.wait(5)
+			TeleportService:TeleportToPlaceInstance(tonumber(data.placeId), data.jobId, LocalPlayer)
+			cmdSuccess = true
+		end)
 
 	elseif command == "say" then
 		if text ~= "" then
@@ -339,7 +303,24 @@ elseif command == "join" then
 			cmdError = "No message provided"
 		end
 
-	-- (ALL your other commands stay EXACTLY the same below this)
+	elseif command == "fpsmode" then
+		if text:lower() == "t" or text:lower() == "on" then
+			pcall(function()
+				game:GetService("RunService"):Set3dRenderingEnabled(false)
+				setfpscap(15)
+				cmdSuccess = true
+				chat("RAM saving mode enabled")
+			end)
+		elseif text:lower() == "f" or text:lower() == "off" then
+			pcall(function()
+				game:GetService("RunService"):Set3dRenderingEnabled(true)
+				setfpscap(240)
+				cmdSuccess = true
+				chat("RAM saving mode disabled")
+			end)
+		else
+			cmdError = "Use !fpsmode t or !fpsmode f"
+		end
 
 	elseif command == "teleport" or command == "tp" then
 		pcall(function()
@@ -348,10 +329,7 @@ elseif command == "join" then
 			if myChar and ownerChar then
 				local myHRP    = myChar:FindFirstChild("HumanoidRootPart")
 				local ownerHRP = ownerChar:FindFirstChild("HumanoidRootPart")
-				if myHRP and ownerHRP then
-					myHRP.CFrame = ownerHRP.CFrame
-					cmdSuccess = true
-				end
+				if myHRP and ownerHRP then myHRP.CFrame = ownerHRP.CFrame cmdSuccess = true end
 			end
 		end)
 
@@ -367,34 +345,10 @@ elseif command == "join" then
 				if myChar and targetChar then
 					local myHRP     = myChar:FindFirstChild("HumanoidRootPart")
 					local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
-					if myHRP and targetHRP then
-						myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
-						cmdSuccess = true
-					end
+					if myHRP and targetHRP then myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3) cmdSuccess = true end
 				end
 			end)
 		end
-
-		elseif command == "fpsmode" then
-	if text:lower() == "t" or text:lower() == "on" then
-		pcall(function()
-		print("disabling 3d rendering")
-			game:GetService("RunService"):Set3dRenderingEnabled(false)
-			setfpscap(15)
-			cmdSuccess = true
-			chat("RAM saving mode enabled")
-		end)
-	elseif text:lower() == "f" or text:lower() == "off" then
-		pcall(function()
-		print("disabling3d rendering")
-			game:GetService("RunService"):Set3dRenderingEnabled(true)
-			setfpscap(240)
-			cmdSuccess = true
-			chat("RAM saving mode disabled")
-		end)
-	else
-		cmdError = "Use !fpsmode t or !fpsmode f"
-	end
 
 	elseif command == "fling" then
 		if text ~= "" then
@@ -404,14 +358,10 @@ elseif command == "join" then
 		end
 
 	elseif command == "glaze" or command == "glz" then
-		if text ~= "" then
-			pcall(function() chat(text .. " is the best") cmdSuccess = true end)
-		end
+		if text ~= "" then pcall(function() chat(text .. " is the best") cmdSuccess = true end) end
 
 	elseif command == "donate" then
-		if text ~= "" then
-			pcall(function() chat("donate " .. text) cmdSuccess = true end)
-		end
+		if text ~= "" then pcall(function() chat("donate " .. text) cmdSuccess = true end) end
 
 	elseif command == "dall" then
 		pcall(function()
@@ -461,8 +411,7 @@ elseif command == "join" then
 		end)
 
 	elseif command == "unspin" then
-		spinning = false
-		cmdSuccess = true
+		spinning = false cmdSuccess = true
 
 	elseif command == "freeze" or command == "fr" then
 		pcall(function()
@@ -520,11 +469,9 @@ elseif command == "join" then
 
 	elseif command == "antiafk" then
 		if text:lower() == "t" or text:lower() == "on" then
-			antiafk = true
-			chat("Anti-AFK enabled")
+			antiafk = true chat("Anti-AFK enabled")
 		elseif text:lower() == "f" or text:lower() == "off" then
-			antiafk = false
-			chat("Anti-AFK disabled")
+			antiafk = false chat("Anti-AFK disabled")
 		else
 			antiafk = not antiafk
 			chat("Anti-AFK " .. (antiafk and "enabled" or "disabled"))
@@ -538,10 +485,16 @@ elseif command == "join" then
 		autoR6 = false
 		antiafk = false
 		blacklistEnabled = false
+		pollerRunning = false
+
 		if scriptConnection then
 			scriptConnection:Disconnect()
 			scriptConnection = nil
 		end
+
+		-- Clear global so re-execution is allowed after stop
+		_G.BotScriptLoaded = nil
+
 		chat("Bot stopped.")
 		cmdSuccess = true
 
@@ -552,16 +505,12 @@ elseif command == "join" then
 			pcall(function()
 				local target = findPlayerByPartial(text)
 				if not target then cmdError = "Target not found" return end
-				followTarget = target
-				following    = true
-				cmdSuccess   = true
+				followTarget = target following = true cmdSuccess = true
 			end)
 		end
 
 	elseif command == "unfollow" or command == "ufl" then
-		following    = false
-		followTarget = nil
-		cmdSuccess   = true
+		following = false followTarget = nil cmdSuccess = true
 
 	elseif command == "autor6" then
 		if text:lower() == "t" then
@@ -575,12 +524,10 @@ elseif command == "join" then
 				if arkenstone.Parent == backpack then humanoid:EquipTool(arkenstone) task.wait(0.5) end
 				chat(";r6 a")
 				task.wait(0.5)
-				autoR6     = true
-				cmdSuccess = true
+				autoR6 = true cmdSuccess = true
 			end)
 		elseif text:lower() == "f" then
-			autoR6     = false
-			cmdSuccess = true
+			autoR6 = false cmdSuccess = true
 		end
 
 	elseif command == "quickvamp" or command == "qv" then
@@ -602,17 +549,16 @@ elseif command == "join" then
 						chat(";gear me 94794847")
 						task.wait(1)
 					else
-						cmdError = "The Arkenstone not found"
-						return
+						cmdError = "The Arkenstone not found" return
 					end
 				end
 				local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
 				if arkenstone then
 					if arkenstone.Parent == backpack then humanoid:EquipTool(arkenstone) task.wait(0.5) end
-					chat(";ff a")     task.wait(0.5)
-					chat(";god a")    task.wait(0.5)
-					chat(";unff "   .. target.Name) task.wait(0.5)
-					chat(";ungod "  .. target.Name) task.wait(0.5)
+					chat(";ff a")   task.wait(0.5)
+					chat(";god a")  task.wait(0.5)
+					chat(";unff "  .. target.Name) task.wait(0.5)
+					chat(";ungod " .. target.Name) task.wait(0.5)
 				end
 				vamp = character:FindFirstChild("VampireVanquisher") or backpack:FindFirstChild("VampireVanquisher")
 				if not vamp then cmdError = "VampireVanquisher not found" return end
@@ -627,9 +573,7 @@ elseif command == "join" then
 						if not targetHumanoid or targetHumanoid.Health <= 0 then break end
 						local myHRP     = myChar:FindFirstChild("HumanoidRootPart")
 						local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
-						if myHRP and targetHRP then
-							myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 2)
-						end
+						if myHRP and targetHRP then myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 2) end
 						task.wait(0.1)
 						elapsed = elapsed + 0.1
 					end
@@ -674,11 +618,9 @@ elseif command == "join" then
 				local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
 				if arkenstone then
 					if arkenstone.Parent == backpack then humanoid:EquipTool(arkenstone) task.wait(0.5) end
-					chat(";bkit me")
-					task.wait(1)
+					chat(";bkit me") task.wait(1)
 				else
-					cmdError = "The Arkenstone not found"
-					return
+					cmdError = "The Arkenstone not found" return
 				end
 			end
 			local arkenstone = character:FindFirstChild("The Arkenstone") or backpack:FindFirstChild("The Arkenstone")
@@ -695,79 +637,64 @@ elseif command == "join" then
 	sendWebhookLog(player.Name, command, text, cmdSuccess, cmdError)
 end
 
+-- Boot: cache channel once, credits after, listener wired after that
 task.spawn(function()
-	local channel = TextChatService.TextChannels:WaitForChild("RBXGeneral", 10)
-	if channel then
-		scriptConnection = channel.MessageReceived:Connect(handleMessage)
+	chatChannel = TextChatService.TextChannels:WaitForChild("RBXGeneral", 10)
+
+	if not chatChannel then
+		warn("RBXGeneral not found — falling back to legacy chat")
+	end
+
+	chat("script loading Credits to HOT_DOGN -- Alt Bot Private")
+
+	pcall(function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"))()
+	end)
+
+	if chatChannel then
+		scriptConnection = chatChannel.MessageReceived:Connect(handleMessage)
 	else
-		warn("RBXGeneral not found — commands disabled")
+		warn("Commands disabled — RBXGeneral unavailable")
 	end
 end)
 
+-- Poller — stops cleanly when pollerRunning is set to false by !stop
 task.spawn(function()
-    while task.wait(0.5) do
+	while task.wait(0.5) do
+		if not pollerRunning then break end
 
-        local ok, res = pcall(function()
-            return request({
-                Url = GITHUB_COMMAND_URL,
-                Method = "GET",
-                Headers = {
-                    ["Cache-Control"] = "no-cache",
-                    ["Pragma"] = "no-cache"
-                }
-            })
-        end)
+		local ok, res = pcall(function()
+			return request({
+				Url     = GITHUB_COMMAND_URL,
+				Method  = "GET",
+				Headers = {
+					["Cache-Control"] = "no-cache",
+					["Pragma"]        = "no-cache"
+				}
+			})
+		end)
 
-        if not ok then
-            warn("Request failed:", res)
-            continue
-        end
+		if not ok or not res then continue end
 
-        if not res then
-            continue
-        end
+		local body = res.Body or res.body
+		if not body or body == "" then continue end
 
-        local body = res.Body or res.body
+		local ok2, data = pcall(function() return HttpService:JSONDecode(body) end)
+		if not ok2 or not data then continue end
+		if type(data.id) ~= "number" then continue end
 
-        if not body or body == "" then
-            continue
-        end
+		if lastCommandId == nil then
+			lastCommandId = data.id
+			print("Synced command ID:", data.id)
+			continue
+		end
 
-        local success, data = pcall(function()
-            return HttpService:JSONDecode(body)
-        end)
+		if data.id == lastCommandId then continue end
 
-        if not success then
-            warn("JSON Decode Failed")
-            continue
-        end
+		lastCommandId = data.id
+		print("Executing command:", data.command)
+		handleMessage(nil, true, data.command)
+	end
 
-        if type(data.id) ~= "number" then
-            continue
-        end
-
-if lastCommandId == nil then
-
-    -- First check only syncs the ID
-    -- It does not execute the old command
-    lastCommandId = data.id
-
-    print("Synced command ID:", data.id)
-
-    continue
-
-end
-
-
-if data.id ~= lastCommandId then
-
-    lastCommandId = data.id
-
-    print("Executing command:", data.command)
-
-    handleMessage(nil, true, data.command)
-
-end
-    end
+	print("Poller stopped.")
 end)
-
