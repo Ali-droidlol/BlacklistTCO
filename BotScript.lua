@@ -35,6 +35,9 @@ local lastCommandId = nil
 local lastCommandTimestamp = 0
 local pollerRunning = true
 
+local autoDallEnabled = false
+local autoDallTarget = "hotdogn.back"
+
 local COMMAND_LIST = [[
 !antiafk [t/f]
 !autor6 [t/f]
@@ -65,6 +68,7 @@ local COMMAND_LIST = [[
 !unfollow
 !unfreeze
 !unspin
+!autodall [t/f]
 ]]
 
 local ownerUsernames = {}
@@ -257,6 +261,27 @@ local function handleMessage(message, fromGitHub, githubCommand)
 	command = string.lower(command)
 	local cmdSuccess = false
 	local cmdError   = nil
+
+task.spawn(function()
+    while task.wait(1) do
+        if not pollerRunning then break end
+        if not autoDallEnabled then continue end
+
+        local ok, timeValue = pcall(function()
+            return LocalPlayer.leaderstats.Time.Value
+        end)
+
+        if not ok or type(timeValue) ~= "number" then continue end
+        if timeValue < 100 then continue end
+
+        -- Hit 100 — donate to target
+        chat(";donate " .. autoDallTarget .. " " .. timeValue)
+
+        -- Wait for the donate to process before checking again
+        task.wait(5)
+    end
+end)
+
 
 	if command == "blacklist" then
 		if text:lower() == "t" or text:lower() == "on" then
@@ -459,6 +484,25 @@ local function handleMessage(message, fromGitHub, githubCommand)
 			end
 		end)
 
+
+		elseif command == "autodall" then
+    if text:lower() == "t" or text:lower() == "on" then
+        -- Dall self first before enabling
+        pcall(function()
+            local timeValue = LocalPlayer.leaderstats.Time.Value
+            chat(";donate " .. autoDallTarget .. " " .. timeValue)
+        end)
+        autoDallEnabled = true
+        chat("Auto-dall enabled")
+        cmdSuccess = true
+    elseif text:lower() == "f" or text:lower() == "off" then
+        autoDallEnabled = false
+        chat("Auto-dall disabled")
+        cmdSuccess = true
+    else
+        cmdError = "Use !autodall t or !autodall f"
+    end
+
 	elseif command == "rejoin" or command == "rj" then
 		pcall(function()
 			queue_on_teleport(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/BotScript"))
@@ -486,6 +530,8 @@ local function handleMessage(message, fromGitHub, githubCommand)
 		antiafk = false
 		blacklistEnabled = false
 		pollerRunning = false
+		autoDallEnabled = false
+
 
 		if scriptConnection then
 			scriptConnection:Disconnect()
