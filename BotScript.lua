@@ -17,9 +17,6 @@ local spinning = false
 local scriptConnection = nil
 local following = false
 local followTarget = nil
-local autoR6 = false
-local antiafk = false
-local blacklistEnabled = false
 local blacklistedPlayers = {}
 local chatChannel = nil
 
@@ -35,8 +32,68 @@ local lastCommandId = nil
 local lastCommandTimestamp = 0
 local pollerRunning = true
 
-local autoDallEnabled = false
-local autoDallTarget = "hotdogn.back"
+local config = "BOTCONFIG.JSON"
+
+local defaultConfig = {
+	antiafk = false,
+	autor6 = false,
+	blacklist = false,
+	autodall = false,
+	afr = false,
+	fpsmode = false,
+	following = false,
+	spinning = false
+}
+
+local BotConfig = {}
+
+local function LoadConfig()
+	local loaded = false
+
+	if typeof(isfile) == "function" and isfile(config) then
+		local success, result = pcall(function()
+			return HttpService:JSONDecode(readfile(config))
+		end)
+
+		if success and type(result) == "table" then
+			BotConfig = result
+			loaded = true
+			print("BOTCONFIG loaded")
+		end
+	end
+
+	if not loaded then
+		BotConfig = table.clone(defaultConfig)
+		writefile(config, HttpService:JSONEncode(BotConfig))
+		print("Created new BOTCONFIG")
+	end
+
+	-- Fill missing values if config was old
+	for key, value in pairs(defaultConfig) do
+		if BotConfig[key] == nil then
+			BotConfig[key] = value
+		end
+	end
+
+	writefile(config, HttpService:JSONEncode(BotConfig))
+end
+
+
+local function SaveConfig()
+	pcall(function()
+		writefile(config, HttpService:JSONEncode(BotConfig))
+	end)
+end
+
+
+LoadConfig()
+
+local antiafk = BotConfig.antiafk
+local autoR6 = BotConfig.autor6
+local blacklistEnabled = BotConfig.blacklist
+local autoFreezeReset = BotConfig.afr
+local autoDallEnabled = BotConfig.autodall
+local fpsMode = BotConfig.fpsmode
 
 local COMMAND_LIST = [[
 !antiafk [t/f]
@@ -69,6 +126,7 @@ local COMMAND_LIST = [[
 !unfreeze
 !unspin
 !autodall [t/f]
+!afr [t/f]
 ]]
 
 local ownerUsernames = {}
@@ -193,12 +251,15 @@ local function findPlayerByPartial(partial)
 end
 
 local VirtualUser = game:GetService("VirtualUser")
+local VIM = game:GetService("VirtualInputManager")
 
 task.spawn(function()
 	while true do
 		task.wait(600)
 		if antiafk then
-			pcall(function() VirtualUser:ClickButton1(Vector2.new(0, 0)) end)
+        VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+        task.wait(0.1)
+        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
 		end
 	end
 end)
@@ -261,6 +322,25 @@ local function handleMessage(message, fromGitHub, githubCommand)
 	command = string.lower(command)
 	local cmdSuccess = false
 	local cmdError   = nil
+
+task.spawn(function()
+	while true do
+		task.wait(0.2)
+
+		if autoFreezeReset then
+			local character = LocalPlayer.Character
+
+			if character and character:FindFirstChild("Hielo") then
+				print("Player frozen - resetting")
+
+				local humanoid = character:FindFirstChildOfClass("Humanoid")
+				if humanoid then
+					humanoid.Health = 0
+				end
+			end
+		end
+	end
+end)
 
 task.spawn(function()
     while task.wait(1) do
@@ -331,15 +411,25 @@ end)
 	elseif command == "fpsmode" then
 		if text:lower() == "t" or text:lower() == "on" then
 			pcall(function()
-				game:GetService("RunService"):Set3dRenderingEnabled(false)
-				setfpscap(15)
-				cmdSuccess = true
-				chat("RAM saving mode enabled")
-			end)
+			game:GetService("RunService"):Set3dRenderingEnabled(false)
+            setfpscap(15)
+
+       fpsMode = true
+       BotConfig.fpsmode = true
+         SaveConfig()
+
+          cmdSuccess = true
+          chat("RAM saving mode enabled")
+    end)
 		elseif text:lower() == "f" or text:lower() == "off" then
 			pcall(function()
 				game:GetService("RunService"):Set3dRenderingEnabled(true)
 				setfpscap(240)
+
+				fpsMode = false
+                BotConfig.fpsmode = false
+				SaveConfig()
+
 				cmdSuccess = true
 				chat("RAM saving mode disabled")
 			end)
@@ -394,6 +484,25 @@ end)
 			chat("donate hotdogn.back " .. timeValue)
 			cmdSuccess = true
 		end)
+
+		elseif command == "afr" then
+	if text:lower() == "t" or text:lower() == "on" then
+	autoFreezeReset = true
+	BotConfig.afr = true
+	SaveConfig()
+		chat("Auto freeze reset enabled")
+		cmdSuccess = true
+
+	elseif text:lower() == "f" or text:lower() == "off" then
+		autoFreezeReset = false
+		BotConfig.afr = false
+		SaveConfig()
+		chat("Auto freeze reset disabled")
+		cmdSuccess = true
+
+	else
+		cmdError = "Use !afr t or !afr f"
+	end
 
 	elseif command == "credits" then
 		pcall(function() chat("Alt Bot V4.5 Private - Hot_Dogn") cmdSuccess = true end)
@@ -493,10 +602,14 @@ end)
             chat(";donate " .. autoDallTarget .. " " .. timeValue)
         end)
         autoDallEnabled = true
+		BotConfig.autodall = true
+		SaveConfig()
         chat("Auto-dall enabled")
         cmdSuccess = true
     elseif text:lower() == "f" or text:lower() == "off" then
         autoDallEnabled = false
+		BotConfig.autodall = false
+		SaveConfig()
         chat("Auto-dall disabled")
         cmdSuccess = true
     else
@@ -513,9 +626,15 @@ end)
 
 	elseif command == "antiafk" then
 		if text:lower() == "t" or text:lower() == "on" then
-			antiafk = true chat("Anti-AFK enabled")
+			antiafk = true
+			BotConfig.antiafk = true
+			SaveConfig()
+			chat("Anti-AFK enabled")
 		elseif text:lower() == "f" or text:lower() == "off" then
-			antiafk = false chat("Anti-AFK disabled")
+			antiafk = false
+			BotConfig.antiafk = false
+			SaveConfig()
+			chat("Anti-AFK disabled")
 		else
 			antiafk = not antiafk
 			chat("Anti-AFK " .. (antiafk and "enabled" or "disabled"))
@@ -531,6 +650,7 @@ end)
 		blacklistEnabled = false
 		pollerRunning = false
 		autoDallEnabled = false
+		autoFreezeReset = false
 
 
 		if scriptConnection then
@@ -570,10 +690,16 @@ end)
 				if arkenstone.Parent == backpack then humanoid:EquipTool(arkenstone) task.wait(0.5) end
 				chat(";r6 a")
 				task.wait(0.5)
-				autoR6 = true cmdSuccess = true
+				autoR6 = true
+				BotConfig.autor6 = true
+				SaveConfig()
+				cmdSuccess = true
 			end)
 		elseif text:lower() == "f" then
-			autoR6 = false cmdSuccess = true
+			autoR6 = false
+			BotConfig.autor6 = false
+	        SaveConfig() 
+			cmdSuccess = true
 		end
 
 	elseif command == "quickvamp" or command == "qv" then
