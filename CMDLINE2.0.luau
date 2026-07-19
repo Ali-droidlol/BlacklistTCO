@@ -7,6 +7,7 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP
 ]=]
 
+
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local UserInputService = game:GetService("UserInputService")
@@ -15,6 +16,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
+
+if localPlayer.name == 'hotdogn_back' then
 
 -- ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -178,6 +181,7 @@ local function executeCommand()
 
 	elseif text == "rejoin" or text == "rj" then
 		TeleportService:Teleport(game.PlaceId, localPlayer)
+        queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()')
 
 	elseif text == "getjobid" or text == "jobid" or text == "getjob" then
 		setclipboard(game.JobId)
@@ -247,4 +251,5 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		task.wait()
 		textBox:CaptureFocus()
 	end
+end
 end)
