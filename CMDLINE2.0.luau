@@ -7,6 +7,12 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP
 ]=]
 
+if _G.SCRIPTLOADEDCMDLINE == true then
+warn('Local player already executed the script')
+end
+
+_G.SCRIPTLOADEDCMDLINE = true
+
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local UserInputService = game:GetService("UserInputService")
@@ -210,6 +216,8 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			print("ALE T: OFF")
 
 		elseif text == "close" then
+		_G.SCRIPTLOADEDCMDLINE = false
+		task.wait(0.2)
 			screenGui:Destroy()
 			return
 		end
