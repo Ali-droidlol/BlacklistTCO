@@ -17,7 +17,7 @@ local TextChatService = game:GetService("TextChatService")
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 
-if localPlayer.Name == "hotdogn_back" then
+if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 
 	-- ScreenGui
 	local screenGui = Instance.new("ScreenGui")
