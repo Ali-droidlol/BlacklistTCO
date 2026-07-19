@@ -203,7 +203,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 						if v:IsA("Tool") then
 							local handle = v:FindFirstChild("Handle")
 							if handle then
-								firetouchinterest(handle, char.HumanoidRootPart, 1)
+								firetouchinterest(handle, char.HumanoidRootPart, 0)
 							end
 						end
 					end
