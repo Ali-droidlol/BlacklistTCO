@@ -142,51 +142,76 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	-- SEND CHAT HELPER
 	-- ============================================================
 	local function sendChat(msg)
-		local channels = TextChatService:FindFirstChild("TextChannels")
-		local general = channels and (
-			channels:FindFirstChild("RBXGeneral")
-			or channels:FindFirstChild("General")
-			or channels:FindFirstChildWhichIsA("TextChannel")
-		)
-		if general then
-			general:SendAsync(msg)
-		else
-			local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-			if chatEvents then
-				local sayMessage = chatEvents:FindFirstChild("SayMessageRequest")
-				if sayMessage then
-					sayMessage:FireServer(msg, "All")
+		local success = false
+
+		-- Try TextChatService first
+		pcall(function()
+			local tcs = game:GetService("TextChatService")
+			if tcs.ChatVersion == Enum.ChatVersion.TextChatService then
+				local channels = tcs:FindFirstChild("TextChannels")
+				if channels then
+					for _, channel in pairs(channels:GetChildren()) do
+						if channel:IsA("TextChannel") then
+							channel:SendAsync(msg)
+							success = true
+							break
+						end
+					end
 				end
 			end
+		end)
+
+		-- Fall back to legacy chat
+		if not success then
+			pcall(function()
+				local rs = game:GetService("ReplicatedStorage")
+				local chatEvents = rs:FindFirstChild("DefaultChatSystemChatEvents")
+				if chatEvents then
+					local sayMessage = chatEvents:FindFirstChild("SayMessageRequest")
+					if sayMessage then
+						sayMessage:FireServer(msg, "All")
+						success = true
+					end
+				end
+			end)
 		end
+
+		-- Last resort
+		if not success then
+			pcall(function()
+				game:GetService("Players").LocalPlayer:Chat(msg)
+			end)
+		end
+
+		print("sendChat:", msg, "| success:", success)
 	end
 
 	-- ============================================================
 	-- ALE T / CHARACTER SETUP
 	-- ============================================================
-	local function onDied()
+-- ============================================================
+	-- ALE T / CHARACTER SETUP
+	-- ============================================================
+local function onDied()
 		if not aleT then return end
-
-		task.wait(0.1)
 
 		local char = localPlayer.Character
 		if not char then return end
 
 		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
-		local tool = (backpack and backpack:FindFirstChild("The Arkenstone"))
-			or char:FindFirstChild("The Arkenstone")
+		local tool = (char:FindFirstChild("The Arkenstone"))
+			or (backpack and backpack:FindFirstChild("The Arkenstone"))
 
-		if tool then
-			local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-			if humanoid then
-				humanoid:EquipTool(tool)
-			end
+		if not tool then return end
+
+		local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+		if humanoid then
+			humanoid:EquipTool(tool)
 		end
 
-		task.wait(0.1)
+		task.wait(0.3)
 		sendChat(";r6")
 	end
-
 	local function setupCharacter(char)
 		char.ChildAdded:Connect(function(child)
 			if child.Name == "Hielo" and antiFreeze then
@@ -359,7 +384,9 @@ end)
 					cn = "hidden"
 					hidden = true
 				else
-					mdata.Text = ""
+					if plr ~= localPlayer then
+						mdata.Text = ""
+					end
 				end
 			end
 
@@ -561,6 +588,9 @@ end
 		elseif text == "antimyopic false" or text == "antimyopic f" then
 			local blur = Lighting:FindFirstChild("Blur")
 			if blur then blur.Enabled = true end
+
+			elseif text == "chattest" then
+             sendChat("hello")
 
 		elseif text == "ale t" then
 			aleT = true
