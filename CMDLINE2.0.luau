@@ -388,6 +388,128 @@ end)
 		end
 	end
 
+
+	-- paste this above the executeCommand function
+local flingActive = false
+getgenv().OldPos = getgenv().OldPos or nil
+getgenv().FPDH = getgenv().FPDH or workspace.FallenPartsDestroyHeight
+
+local function SkidFling(targetPlayer)
+    local char = localPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local root = hum and hum.RootPart
+    local tChar = targetPlayer.Character
+    if not tChar then return end
+
+    local tHum = tChar:FindFirstChildOfClass("Humanoid")
+    local tRoot = tHum and tHum.RootPart
+    local tHead = tChar:FindFirstChild("Head")
+    local accessory = tChar:FindFirstChildOfClass("Accessory")
+    local handle = accessory and accessory:FindFirstChild("Handle")
+
+    if not (char and hum and root) then return end
+
+    if root.Velocity.Magnitude < 50 then
+        getgenv().OldPos = root.CFrame
+    end
+
+    if tHum and tHum.Sit then return end
+
+    if tHead then
+        workspace.CurrentCamera.CameraSubject = tHead
+    elseif handle then
+        workspace.CurrentCamera.CameraSubject = handle
+    elseif tHum then
+        workspace.CurrentCamera.CameraSubject = tHum
+    end
+
+    if not tChar:FindFirstChildWhichIsA("BasePart") then return end
+
+    local function FPos(basePart, pos, ang)
+        root.CFrame = CFrame.new(basePart.Position) * pos * ang
+        char:SetPrimaryPartCFrame(CFrame.new(basePart.Position) * pos * ang)
+        root.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+        root.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+    end
+
+    local function SFBasePart(basePart)
+        local timeToWait = 2
+        local t = tick()
+        local angle = 0
+        repeat
+            if root and tHum then
+                if basePart.Velocity.Magnitude < 50 then
+                    angle = angle + 100
+                    FPos(basePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait()
+                else
+                    FPos(basePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, -tHum.WalkSpeed), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
+                    task.wait()
+                    FPos(basePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
+                    task.wait()
+                end
+            end
+        until t + timeToWait < tick() or not flingActive
+    end
+
+    workspace.FallenPartsDestroyHeight = 0/0
+
+    local bv = Instance.new("BodyVelocity")
+    bv.Parent = root
+    bv.Velocity = Vector3.new(0, 0, 0)
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+    if tRoot then
+        SFBasePart(tRoot)
+    elseif tHead then
+        SFBasePart(tHead)
+    elseif handle then
+        SFBasePart(handle)
+    end
+
+    bv:Destroy()
+    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+    workspace.CurrentCamera.CameraSubject = hum
+
+    if getgenv().OldPos then
+        repeat
+            root.CFrame = getgenv().OldPos * CFrame.new(0, 0.5, 0)
+            char:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, 0.5, 0))
+            hum:ChangeState("GettingUp")
+            for _, part in pairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.Velocity = Vector3.new()
+                    part.RotVelocity = Vector3.new()
+                end
+            end
+            task.wait()
+        until (root.Position - getgenv().OldPos.p).Magnitude < 25
+        workspace.FallenPartsDestroyHeight = getgenv().FPDH
+    end
+end
+
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -478,6 +600,48 @@ elseif text == "antiglitch false"
 
     antiGlitch = false
     print("Anti Glitch: OFF")
+
+
+	elseif text:sub(1, 5) == "fling" then
+    local query = text:sub(7):gsub("^%s+", ""):gsub("%s+$", "")
+    local lowerQuery = query:lower()
+    local target = nil
+
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= localPlayer then
+            if p.Name:lower() == lowerQuery or p.DisplayName:lower() == lowerQuery then
+                target = p
+                break
+            end
+        end
+    end
+    if not target then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= localPlayer then
+                if p.Name:lower():sub(1, #lowerQuery) == lowerQuery
+                    or p.DisplayName:lower():sub(1, #lowerQuery) == lowerQuery then
+                    target = p
+                    break
+                end
+            end
+        end
+    end
+
+    if target then
+        flingActive = true
+        task.spawn(function()
+            SkidFling(target)
+            flingActive = false
+        end)
+        print("Flinging:", target.Name)
+    else
+        print("fling: no target for '" .. query .. "'")
+    end
+
+elseif text == "fling stop" or text == "unfling" then
+    flingActive = false
+    print("Fling stopped")
+	
 
 		-- ---- AUTOPICKUP ----
 		elseif text == "autopickup true" or text == "autopickup t" then
