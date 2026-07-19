@@ -327,6 +327,46 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			aleT = false
 			print("ALE F: OFF")
 
+		-- ---- GOTO ----
+		elseif text:sub(1, 5) == "goto " then
+			local query = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
+			local lowerQuery = query:lower()
+			local found = nil
+			-- first pass: exact match on username or displayname
+			for _, p in pairs(Players:GetPlayers()) do
+				if p ~= localPlayer then
+					if p.Name:lower() == lowerQuery or p.DisplayName:lower() == lowerQuery then
+						found = p
+						break
+					end
+				end
+			end
+			-- second pass: partial match (starts with)
+			if not found then
+				for _, p in pairs(Players:GetPlayers()) do
+					if p ~= localPlayer then
+						if p.Name:lower():sub(1, #lowerQuery) == lowerQuery
+							or p.DisplayName:lower():sub(1, #lowerQuery) == lowerQuery then
+							found = p
+							break
+						end
+					end
+				end
+			end
+			if found then
+				local targetChar = workspace:FindFirstChild(found.Name)
+				local myChar = localPlayer.Character
+				if targetChar and myChar then
+					local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+					local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+					if targetRoot and myRoot then
+						myRoot.CFrame = targetRoot.CFrame + Vector3.new(0, 0, 3)
+					end
+				end
+			else
+				print("goto: player not found for query '" .. query .. "'")
+			end
+
 		-- ---- SPYCHAT ----
 		elseif text == "spychat true" or text == "spychat t" then
 			spychat = true
