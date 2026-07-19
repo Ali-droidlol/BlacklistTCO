@@ -25,6 +25,20 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 
 local antiinvis = false
 
+local SPAWN_POS = Vector3.new(
+    1.979060471057892e-09,
+    26.699996948242188,
+    7.257767720147967e-10
+)
+
+local GLITCH_POS = Vector3.new(
+    1234566.625,
+    1234470.375,
+    1234566.625
+)
+
+local GLITCH_RADIUS = 100000 -- 100k studs
+
 if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 
 	-- ScreenGui
@@ -213,6 +227,22 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			end
 		end
 	end)
+
+	task.spawn(function()
+    while task.wait(0.5) do
+        if not antiGlitch then
+            continue
+        end
+
+        local char = game.Players.LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+        if hrp and (hrp.Position - GLITCH_POS).Magnitude <= GLITCH_RADIUS then
+            warn("Glitch dimension detected!")
+            hrp.CFrame = CFrame.new(SPAWN_POS)
+        end
+    end
+end)
 
 	-- ============================================================
 	-- AUTO DELCUBES ALL
@@ -416,6 +446,37 @@ end)
 		elseif text == "ale f" then
 			aleT = false
 			print("ALE F: OFF")
+
+			elseif text:sub(1, 6) == "speed " then
+    local speed = tonumber(text:sub(7))
+
+    if speed then
+        local char = localPlayer.Character
+        local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+
+        if humanoid then
+            humanoid.WalkSpeed = speed
+            print("WalkSpeed set to", speed)
+        end
+    else
+        warn("Usage: speed <number>")
+    end
+
+	elseif text == "antiglitch true"
+    or text == "antiglitch t"
+    or text == "ag true"
+    or text == "ag t" then
+
+    antiGlitch = true
+    print("Anti Glitch: ON")
+
+elseif text == "antiglitch false"
+    or text == "antiglitch f"
+    or text == "ag false"
+    or text == "ag f" then
+
+    antiGlitch = false
+    print("Anti Glitch: OFF")
 
 		-- ---- AUTOPICKUP ----
 		elseif text == "autopickup true" or text == "autopickup t" then
