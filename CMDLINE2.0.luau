@@ -23,6 +23,8 @@ local TextChatService = game:GetService("TextChatService")
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 
+local antiinvis = false
+
 if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 
 	-- ScreenGui
@@ -255,6 +257,26 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 		end
 	end)
 
+	task.spawn(function()
+    while task.wait(1) do
+        if antiinvis then
+            local char = localPlayer.Character
+            if char then
+                local head = char:FindFirstChild("Head")
+
+                if head and (head.Transparency >= 1 or head.LocalTransparencyModifier >= 1) then
+                    print("Player is invisible - resetting")
+
+                    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0
+                    end
+                end
+            end
+        end
+    end
+end)
+
 	-- ============================================================
 	-- SPYCHAT — OnIncomingMessage
 	-- ============================================================
@@ -461,6 +483,22 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 		elseif text == "spychat false" or text == "spychat f" then
 			spychat = false
 			print("SpyChat: OFF")
+
+		elseif text == "antiinvis true"
+    or text == "antiinvis t"
+    or text == "antiinvisible true"
+    or text == "antiinvisible t" then
+
+    antiinvis = true
+    print("Anti Invisible: ON")
+
+elseif text == "antiinvis false"
+    or text == "antiinvis f"
+    or text == "antiinvisible false"
+    or text == "antiinvisible f" then
+
+    antiinvis = false
+    print("Anti Invisible: OFF")
 
 		elseif text == "close" then
 			_G.SCRIPTLOADEDCMDLINE = false
