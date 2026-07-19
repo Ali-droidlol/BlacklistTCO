@@ -245,7 +245,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 						task.wait(1.75)
 					end
 
-					sendChat("test")
+					sendChat(";delcubes a")
 					print("ADA: sent ;delcubes a")
 
 				elseif not hasNow then
