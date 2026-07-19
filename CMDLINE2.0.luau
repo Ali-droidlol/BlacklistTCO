@@ -96,6 +96,9 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	local antiFreeze = false
 	local aleT = false
 	local spychat = false
+	local autoPickup = false
+	local autoPickupLoop = nil
+	local autoDelCubesAll = false
 	local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
 	-- ============================================================
@@ -185,6 +188,71 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	localPlayer.CharacterAdded:Connect(function(char)
 		character = char
 		setupCharacter(char)
+	end)
+
+	-- ============================================================
+	-- AUTO PICKUP LOOP
+	-- ============================================================
+	task.spawn(function()
+		while true do
+			task.wait(0.1)
+			if autoPickup then
+				local char = localPlayer.Character
+				if char then
+					for _, v in pairs(workspace:GetChildren()) do
+						if v:IsA("Tool") then
+							local handle = v:FindFirstChild("Handle")
+							if handle then
+								firetouchinterest(handle, char.HumanoidRootPart, 1)
+							end
+						end
+					end
+				end
+			end
+		end
+	end)
+
+	-- ============================================================
+	-- AUTO DELCUBES ALL
+	-- ============================================================
+	local adaFired = false
+
+	task.spawn(function()
+		local hadArken = false
+		while true do
+			task.wait(1.5)
+			if autoDelCubesAll and not adaFired then
+				local char = localPlayer.Character
+				local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+				if not char or not backpack then
+					hadArken = false
+					continue
+				end
+
+				local inChar = char:FindFirstChild("The Arkenstone")
+				local inBackpack = backpack:FindFirstChild("The Arkenstone")
+				local hasNow = inChar ~= nil or inBackpack ~= nil
+
+				-- only trigger when player JUST got it (didnt have it before)
+				if hasNow and not hadArken then
+					hadArken = true
+					adaFired = true
+
+					local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+
+					if inBackpack and humanoid then
+						humanoid:EquipTool(inBackpack)
+						task.wait(1.75)
+					end
+
+					sendChat("test")
+					print("ADA: sent ;delcubes a")
+
+				elseif not hasNow then
+					hadArken = false
+				end
+			end
+		end
 	end)
 
 	-- ============================================================
@@ -326,6 +394,24 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 		elseif text == "ale f" then
 			aleT = false
 			print("ALE F: OFF")
+
+		-- ---- AUTOPICKUP ----
+		elseif text == "autopickup true" or text == "autopickup t" then
+			autoPickup = true
+			print("Auto Pickup: ON")
+
+		elseif text == "autopickup false" or text == "autopickup f" then
+			autoPickup = false
+			print("Auto Pickup: OFF")
+
+		-- ---- AUTO DELCUBES ALL ----
+		elseif text == "autodelcubesall true" or text == "autodelcubesall t" or text == "ada t" then
+			autoDelCubesAll = true
+			print("Auto DelCubes All: ON")
+
+		elseif text == "autodelcubesall false" or text == "autodelcubesall f" or text == "ada f" then
+			autoDelCubesAll = false
+			print("Auto DelCubes All: OFF")
 
 		-- ---- GOTO ----
 		elseif text:sub(1, 5) == "goto " then
