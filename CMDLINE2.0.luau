@@ -8,8 +8,7 @@
 ]=]
 
 if _G.SCRIPTLOADEDCMDLINE == true then
-warn('Local player already executed the script')
-return nil
+	warn('Local player already executed the script')
 end
 
 _G.SCRIPTLOADEDCMDLINE = true
@@ -91,11 +90,37 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 
 	Instance.new("UICorner", execButton)
 
-	-- State
+	-- ============================================================
+	-- STATE
+	-- ============================================================
 	local antiFreeze = false
 	local aleT = false
+	local spychat = false
 	local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
+	-- ============================================================
+	-- TCO COLOR TABLES
+	-- ============================================================
+	local isog = workspace:FindFirstChild("Cubes") ~= nil
+
+	local namecolors = {
+		peasant  = {150, 103, 102},
+		arken    = {4,   175, 236},
+		admin    = {245, 205, 48},
+		hidden   = {255, 0,   0},
+	}
+	if isog then
+		namecolors.peasant = {128, 128, 128}
+	end
+
+	local namecolorshex = {}
+	for i, v in pairs(namecolors) do
+		namecolorshex[i] = "#" .. Color3.fromRGB(table.unpack(v)):ToHex()
+	end
+
+	-- ============================================================
+	-- SEND CHAT HELPER
+	-- ============================================================
 	local function sendChat(msg)
 		local channels = TextChatService:FindFirstChild("TextChannels")
 		local general = channels and (
@@ -116,6 +141,9 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 		end
 	end
 
+	-- ============================================================
+	-- ALE T / CHARACTER SETUP
+	-- ============================================================
 	local function onDied()
 		if not aleT then return end
 
@@ -159,6 +187,89 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 		setupCharacter(char)
 	end)
 
+	-- ============================================================
+	-- SPYCHAT — OnIncomingMessage
+	-- ============================================================
+	local TCO_PLACE_IDS = {
+		11137575513,
+		12943245078,
+		12943247001,
+		108097274488844,
+	}
+
+	local isTCO = false
+	for _, id in ipairs(TCO_PLACE_IDS) do
+		if game.PlaceId == id then isTCO = true; break end
+	end
+
+	if isTCO then
+		TextChatService.OnIncomingMessage = function(mdata)
+			local plr = mdata.TextSource
+				and mdata.TextSource.UserId
+				and Players:GetPlayerByUserId(mdata.TextSource.UserId)
+			if not plr then return end
+
+			-- Determine player colour category
+			local cn
+			if plr.Neutral == true then
+				if plr:GetAttribute("Arken") == true then
+					cn = "arken"
+				else
+					cn = "peasant"
+				end
+			else
+				cn = "admin"
+			end
+
+			local muted = plr:HasTag("Muted")
+
+			-- Handle muted players
+			if muted then
+				cn = "hidden"
+				if not spychat then
+					mdata.Text = ""
+				end
+			end
+
+			-- Handle silent (;) commands
+			local hidden = false
+			if string.sub(mdata.Text, 1, 1) == ";" then
+				if spychat then
+					cn = "hidden"
+					hidden = true
+				else
+					mdata.Text = ""
+				end
+			end
+
+			-- Build icon
+			local icon = ""
+			if spychat then
+				if hidden then
+					icon = "🚫 "
+				elseif muted then
+					icon = "🤐 "
+				end
+			end
+
+			-- Apply coloured name prefix
+			local r   = namecolors[cn][1]
+			local g   = namecolors[cn][2]
+			local b   = namecolors[cn][3]
+			local hex = namecolorshex[cn]
+			local displayName = plr.DisplayName
+
+			if isog then
+				mdata.PrefixText = "<font color=\"" .. hex .. "\"><b><font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. icon .. "[" .. displayName .. "]: </font></b></font>"
+			else
+				mdata.PrefixText = "<font color=\"" .. hex .. "\"><i><font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. icon .. "(" .. displayName .. ") </font></i></font>"
+			end
+		end
+	end
+
+	-- ============================================================
+	-- EXECUTE COMMAND
+	-- ============================================================
 	local function executeCommand()
 		local text = textBox.Text:lower():gsub("^%s+", ""):gsub("%s+$", "")
 
@@ -214,11 +325,20 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 
 		elseif text == "ale f" then
 			aleT = false
-			print("ALE T: OFF")
+			print("ALE F: OFF")
+
+		-- ---- SPYCHAT ----
+		elseif text == "spychat true" or text == "spychat t" then
+			spychat = true
+			print("SpyChat: ON")
+
+		elseif text == "spychat false" or text == "spychat f" then
+			spychat = false
+			print("SpyChat: OFF")
 
 		elseif text == "close" then
-		_G.SCRIPTLOADEDCMDLINE = false
-		task.wait(0.2)
+			_G.SCRIPTLOADEDCMDLINE = false
+			task.wait(0.2)
 			screenGui:Destroy()
 			return
 		end
