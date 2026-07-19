@@ -9,6 +9,7 @@
 
 if _G.SCRIPTLOADEDCMDLINE == true then
 warn('Local player already executed the script')
+return nil
 end
 
 _G.SCRIPTLOADEDCMDLINE = true
