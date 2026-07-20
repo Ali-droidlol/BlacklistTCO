@@ -720,6 +720,72 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 		end)
 	end
 
+-- ============================================================
+	-- IY BANG
+	-- ============================================================
+	local bangAnim = nil
+	local bangTrack = nil
+	local bangDied = nil
+	local bangLoop = nil
+
+	local function stopBang()
+		if bangDied then bangDied:Disconnect(); bangDied = nil end
+		if bangLoop then bangLoop:Disconnect(); bangLoop = nil end
+		if bangTrack then bangTrack:Stop(); bangTrack = nil end
+		if bangAnim then bangAnim:Destroy(); bangAnim = nil end
+	end
+
+	local function startBang(targetName, speed)
+		stopBang()
+		task.wait()
+
+		local char = localPlayer.Character
+		local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+		if not humanoid then return end
+
+		local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
+
+		bangAnim = Instance.new("Animation")
+		bangAnim.AnimationId = not isR15 and "rbxassetid://148840371" or "rbxassetid://5918726674"
+		bangTrack = humanoid:LoadAnimation(bangAnim)
+		bangTrack:Play(0.1, 1, 1)
+		bangTrack:AdjustSpeed(speed or 3)
+
+		bangDied = humanoid.Died:Connect(function()
+			stopBang()
+		end)
+
+		if targetName then
+			local target = nil
+			for _, p in pairs(Players:GetPlayers()) do
+				if p ~= localPlayer then
+					if p.Name:lower():sub(1, #targetName) == targetName:lower()
+						or p.DisplayName:lower():sub(1, #targetName) == targetName:lower() then
+						target = p
+						break
+					end
+				end
+			end
+
+			if target then
+				local bangOffset = CFrame.new(0, 0, 1.1)
+				bangLoop = game:GetService("RunService").Stepped:Connect(function()
+					pcall(function()
+						local myHrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+						local otherHrp = target.Character and (
+							target.Character:FindFirstChild("HumanoidRootPart")
+							or target.Character:FindFirstChild("Torso")
+						)
+						if myHrp and otherHrp then
+							myHrp.CFrame = otherHrp.CFrame * bangOffset
+						end
+					end)
+				end)
+			end
+		end
+	end
+
+
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -772,8 +838,6 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			local blur = Lighting:FindFirstChild("Blur")
 			if blur then blur.Enabled = true end
 
-		elseif text == "chattest" then
-			sendChat("hello")
 
 		elseif text == "ale t" then
 			aleT = true
@@ -795,6 +859,18 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			else
 				warn("Usage: speed <number>")
 			end
+
+			elseif text:sub(1, 4) == "bang" then
+			local parts = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
+			local args = string.split(parts, " ")
+			local targetName = args[1] ~= "" and args[1] or nil
+			local speed = tonumber(args[2]) or 3
+			startBang(targetName, speed)
+			print("Bang: ON")
+
+		elseif text == "unbang" then
+			stopBang()
+			print("Bang: OFF")
 
 		elseif text == "antiglitch true" or text == "antiglitch t" or text == "ag true" or text == "ag t" then
 			antiGlitch = true
