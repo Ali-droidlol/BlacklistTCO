@@ -112,6 +112,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	local antiGlitch = false
 	local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 	local isog = workspace:FindFirstChild("Cubes") ~= nil
+    local ranksEnabled = true   -- Default: ON
 
 	-- ============================================================
 	-- TCO COLOR TABLES
@@ -786,6 +787,133 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	end
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ============================================================
+-- BILLBOARD SYSTEM (Fixed + Toggle)
+-- ============================================================
+
+local BILLBOARD_NAME = "PremiumBillboard"
+local ranksEnabled = true
+
+local specialUsers = {
+    ["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0), text = "👑 OWNER" },
+    ["TCORAIDS"]     = { color = Color3.fromRGB(0, 255, 255), text = "⭐ DEV" },
+}
+
+local function createBillboard(player)
+    if not ranksEnabled then return end
+    
+    if not player or not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if not head then return end
+
+    local old = head:FindFirstChild(BILLBOARD_NAME)
+    if old then old:Destroy() end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = BILLBOARD_NAME
+    billboard.Adornee = head
+    billboard.Size = UDim2.new(0, 300, 0, 95)
+    billboard.StudsOffset = Vector3.new(0, 5.5, 0)
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1,0,1,0)
+    frame.BackgroundTransparency = 0.35
+    frame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    frame.BorderSizePixel = 0
+    frame.Parent = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 16)
+    corner.Parent = frame
+
+    local isSpecial = specialUsers[player.Name]
+    local displayText = isSpecial and isSpecial.text or "🟢 ONLINE"
+    local textColor = isSpecial and isSpecial.color or Color3.fromRGB(0, 255, 140)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1,0,0.55,0)
+    label.Position = UDim2.new(0,0,0.08,0)
+    label.BackgroundTransparency = 1
+    label.Text = displayText
+    label.TextColor3 = textColor
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.TextStrokeTransparency = 0.2
+    label.TextStrokeColor3 = Color3.new(0,0,0)
+    label.Parent = frame
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1,0,0.45,0)
+    nameLabel.Position = UDim2.new(0,0,0.55,0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = "@" .. player.Name
+    nameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.Gotham
+    nameLabel.TextStrokeTransparency = 0.6
+    nameLabel.Parent = frame
+
+    billboard.Parent = head
+end
+
+local function setupPlayer(player)
+    -- Heartbeat
+    spawn(function()
+        while player.Parent do
+            pcall(function()
+                local payload = {
+                    userId = tostring(player.UserId),
+                    username = player.Name,
+                    status = "playing",
+                    placeId = tostring(game.PlaceId),
+                    jobId = game.JobId or "N/A",
+                    playerCount = #Players:GetPlayers(),
+                    lastHeartbeat = tick() * 1000
+                }
+                request({
+                    Url = "http://82.30.76.135:3000/presence",
+                    Method = "POST",
+                    Headers = {["Content-Type"] = "application/json"},
+                    Body = HttpService:JSONEncode(payload)
+                })
+            end)
+            wait(10)
+        end
+    end)
+
+    -- Billboard
+    if player.Character then createBillboard(player) end
+    player.CharacterAdded:Connect(function()
+        wait(1.5)
+        createBillboard(player)
+    end)
+end
+
+-- Apply to all players
+for _, p in ipairs(Players:GetPlayers()) do
+    setupPlayer(p)
+end
+Players.PlayerAdded:Connect(setupPlayer)
+
+print("✅ Billboard + Heartbeat System Loaded")
+	
+
+
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -888,12 +1016,25 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			griefActive = false
 			print("DeleteAura: OFF")
 
-		elseif text == "delatest" then
-			local dtools = findbtoolsGlobal("Delete")
-			print("Delete tools found:", #dtools)
-			for _, dt in pairs(dtools) do
-				print("Tool:", dt.bt.Name, "Event:", dt.e)
-			end
+			elseif text == "ranksenable t" or text == "re t" or text == "ranks t" then
+    ranksEnabled = true
+    print("Ranks / Billboards: ENABLED")
+    for _, p in ipairs(Players:GetPlayers()) do
+        createBillboard(p)
+    end
+
+elseif text == "ranksenable f" or text == "re f" or text == "ranks f" then
+    ranksEnabled = false
+    print("Ranks / Billboards: DISABLED")
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character then
+            local head = p.Character:FindFirstChild("Head")
+            if head then
+                local old = head:FindFirstChild(BILLBOARD_NAME)
+                if old then old:Destroy() end
+            end
+        end
+    end
 
 		elseif text == "sia" or text == "signaura" then
 			startSignAura()
