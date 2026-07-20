@@ -610,6 +610,39 @@ local function startGriefAura()
 			end
 		end)
 	end
+
+local signAuraActive = false
+
+	local function startSignAura()
+		signAuraActive = true
+		task.spawn(function()
+			local sti = 0
+			while signAuraActive do
+				local s, e = pcall(function()
+					local hrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+					if hrp then
+						local signs = findbtoolsGlobal("Sign")
+						while #signs > 0 and signAuraActive do
+							sti = sti + 1
+							local randompos = hrp.Position + CFrame.lookAt(Vector3.zero, Vector3.new(math.random(-1,1), 0, math.random(-1,1)).Unit).LookVector * 20
+							local st = signs[(sti % #signs) + 1]
+							st.bt.Parent = localPlayer.Character
+							if isog then
+								st.e:FireServer(randompos, Enum.NormalId.Top, workspace.Trrain and workspace.Trrain:FindFirstChild("Mesh", true) or workspace.Terrain, Color3.new(1,1,1), "Smooth")
+							else
+								st.e:FireServer(workspace.Terrain, Enum.NormalId.Top, randompos)
+							end
+							task.wait(0.1)
+							signs = findbtoolsGlobal("Sign")
+						end
+					end
+				end)
+				if not s then warn(e) end
+				task.wait()
+			end
+		end)
+	end
+
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -703,6 +736,61 @@ elseif text == "antiglitch false"
 
     antiGlitch = false
     print("Anti Glitch: OFF")
+
+	elseif text == 'jerkoff' or text == 'goon' then
+		local speaker = game.Players.LocalPlayer
+local humanoid = speaker.Character:FindFirstChildWhichIsA("Humanoid")
+	local backpack = speaker:FindFirstChildWhichIsA("Backpack")
+      local function r15(player)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+    return humanoid and humanoid.RigType == Enum.HumanoidRigType.R15
+end
+
+	if not humanoid or not backpack then return end
+
+	local tool = Instance.new("Tool")
+	tool.Name = "Jerk Off"
+	tool.ToolTip = "in the stripped club. straight up \"jorking it\" . and by \"it\" , haha, well. let's justr say. My peanits."
+	tool.RequiresHandle = false
+	tool.Parent = backpack
+
+	local jorkin = false
+	local track = nil
+
+	local function stopTomfoolery()
+		jorkin = false
+		if track then
+			track:Stop()
+			track = nil
+		end
+	end
+
+	tool.Equipped:Connect(function() jorkin = true end)
+	tool.Unequipped:Connect(stopTomfoolery)
+	humanoid.Died:Connect(stopTomfoolery)
+
+	while task.wait() do
+		if not jorkin then continue end
+
+		local isR15 = r15(speaker)
+		if not track then
+			local anim = Instance.new("Animation")
+			anim.AnimationId = not isR15 and "rbxassetid://72042024" or "rbxassetid://698251653"
+			track = humanoid:LoadAnimation(anim)
+		end
+
+		track:Play()
+		track:AdjustSpeed(isR15 and 0.7 or 0.65)
+		track.TimePosition = 0.6
+		task.wait(0.1)
+		while track and track.TimePosition < (not isR15 and 0.65 or 0.7) do task.wait(0.1) end
+		if track then
+			track:Stop()
+			track = nil
+		end
+	end
 
 elseif text == "dela" then
 			startGriefAura()
@@ -826,6 +914,14 @@ elseif text == "fling stop" or text == "unfling" then
 		elseif text == "spychat false" or text == "spychat f" then
 			spychat = false
 			print("SpyChat: OFF")
+
+			elseif text == "sia" or text == "signaura" then
+			startSignAura()
+			print("SignAura: ON")
+
+		elseif text == "unsia" or text == "unsignaura" then
+			signAuraActive = false
+			print("SignAura: OFF")
 
 		elseif text == "antiinvis true"
     or text == "antiinvis t"
