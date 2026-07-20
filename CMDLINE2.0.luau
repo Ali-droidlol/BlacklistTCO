@@ -117,6 +117,8 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	local autoPickupLoop = nil
 	local autoDelCubesAll = false
 	local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+	local antiGlitch = false
+	local griefaround = nil
 
 	-- ============================================================
 	-- TCO COLOR TABLES
@@ -141,27 +143,24 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	-- ============================================================
 	-- SEND CHAT HELPER
 	-- ============================================================
+-- ============================================================
+	-- SEND CHAT HELPER
+	-- ============================================================
 	local function sendChat(msg)
 		local success = false
 
-		-- Try TextChatService first
 		pcall(function()
 			local tcs = game:GetService("TextChatService")
-			if tcs.ChatVersion == Enum.ChatVersion.TextChatService then
-				local channels = tcs:FindFirstChild("TextChannels")
-				if channels then
-					for _, channel in pairs(channels:GetChildren()) do
-						if channel:IsA("TextChannel") then
-							channel:SendAsync(msg)
-							success = true
-							break
-						end
-					end
+			local channels = tcs:FindFirstChild("TextChannels")
+			if channels then
+				local general = channels:FindFirstChild("RBXGeneral")
+				if general then
+					general:SendAsync(msg)
+					success = true
 				end
 			end
 		end)
 
-		-- Fall back to legacy chat
 		if not success then
 			pcall(function()
 				local rs = game:GetService("ReplicatedStorage")
@@ -176,7 +175,6 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 			end)
 		end
 
-		-- Last resort
 		if not success then
 			pcall(function()
 				game:GetService("Players").LocalPlayer:Chat(msg)
@@ -189,10 +187,9 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	-- ============================================================
 	-- ALE T / CHARACTER SETUP
 	-- ============================================================
--- ============================================================
-	-- ALE T / CHARACTER SETUP
-	-- ============================================================
-local function onDied()
+	local antiGlitch = false
+
+	local function onDied()
 		if not aleT then return end
 
 		local char = localPlayer.Character
@@ -212,6 +209,9 @@ local function onDied()
 		task.wait(0.3)
 		sendChat(";r6")
 	end
+
+	local diedConnection = nil
+
 	local function setupCharacter(char)
 		char.ChildAdded:Connect(function(child)
 			if child.Name == "Hielo" and antiFreeze then
@@ -222,7 +222,13 @@ local function onDied()
 		end)
 
 		local humanoid = char:WaitForChild("Humanoid")
-		humanoid.Died:Connect(onDied)
+
+		if diedConnection then
+			diedConnection:Disconnect()
+			diedConnection = nil
+		end
+
+		diedConnection = humanoid.Died:Connect(onDied)
 	end
 
 	setupCharacter(character)
@@ -231,7 +237,6 @@ local function onDied()
 		character = char
 		setupCharacter(char)
 	end)
-
 	-- ============================================================
 	-- AUTO PICKUP LOOP
 	-- ============================================================
@@ -537,6 +542,74 @@ local function SkidFling(targetPlayer)
     end
 end
 
+local function findbtoolsGlobal(name)
+		local btools = {}
+		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
+		local char = localPlayer.Character
+		if backpack then
+			for _, v in pairs(backpack:GetChildren()) do
+				if v:IsA("Tool") and v:FindFirstChild("Script") and v.Script:FindFirstChild("Event") and v.Name == name then
+					table.insert(btools, {bt=v, e=v.Script.Event})
+				end
+			end
+		end
+		if char then
+			for _, v in pairs(char:GetChildren()) do
+				if v:IsA("Tool") and v:FindFirstChild("Script") and v.Script:FindFirstChild("Event") and v.Name == name then
+					table.insert(btools, {bt=v, e=v.Script.Event})
+				end
+			end
+		end
+		return btools
+	end
+
+	local griefActive = false
+
+local function startGriefAura()
+		griefActive = true
+		local isog = workspace:FindFirstChild("Cubes") ~= nil
+		local cfolder = isog and workspace.Cubes or workspace:FindFirstChild("Bricks")
+		task.spawn(function()
+			while griefActive do
+				local s, e = pcall(function()
+					local hrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+					if hrp and cfolder then
+						local dtools = findbtoolsGlobal("Delete")
+						if #dtools > 0 then
+							-- gather and sort cubes by distance to each player
+							for _, p in pairs(Players:GetPlayers()) do
+								if p ~= localPlayer and p.Character then
+									local hrp2 = p.Character:FindFirstChild("HumanoidRootPart")
+									if hrp2 then
+										local cubes = {}
+										for _, v in pairs(cfolder:GetDescendants()) do
+											if v:IsA("BasePart") then
+												table.insert(cubes, {v, (v.Position - hrp2.Position).Magnitude})
+											end
+										end
+										table.sort(cubes, function(a, b) return a[2] < b[2] end)
+										for _, v in pairs(cubes) do
+											if not griefActive then break end
+											local dt = dtools[math.random(#dtools)]
+											dt.bt.Parent = localPlayer.Character
+											if isog then
+												dt.e:FireServer(hrp.Position, Enum.NormalId.Top, v[1], Color3.new(0,0,0), "Smooth")
+											else
+												dt.e:FireServer(v[1], hrp.Position)
+											end
+											task.wait(0.1)
+										end
+									end
+								end
+							end
+						end
+					end
+				end)
+				if not s then warn(e) end
+				task.wait()
+			end
+		end)
+	end
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -631,6 +704,20 @@ elseif text == "antiglitch false"
     antiGlitch = false
     print("Anti Glitch: OFF")
 
+elseif text == "dela" then
+			startGriefAura()
+			print("DeleteAura: ON")
+
+		elseif text == "undela" then
+			griefActive = false
+			print("DeleteAura: OFF")
+
+			elseif text == "delatest" then
+			local dtools = findbtoolsGlobal("Delete")
+			print("Delete tools found:", #dtools)
+			for _, dt in pairs(dtools) do
+				print("Tool:", dt.bt.Name, "Event:", dt.e)
+			end
 
 	elseif text:sub(1, 5) == "fling" then
     local query = text:sub(7):gsub("^%s+", ""):gsub("%s+$", "")
