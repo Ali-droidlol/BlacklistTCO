@@ -189,29 +189,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 	-- ============================================================
 	local antiGlitch = false
 
-	local function onDied()
-		if not aleT then return end
-
-		local char = localPlayer.Character
-		if not char then return end
-
-		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
-		local tool = (char:FindFirstChild("The Arkenstone"))
-			or (backpack and backpack:FindFirstChild("The Arkenstone"))
-
-		if not tool then return end
-
-		local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-		if humanoid then
-			humanoid:EquipTool(tool)
-		end
-
-		task.wait(0.3)
-		sendChat(";r6")
-	end
-
-	local diedConnection = nil
-
+	
 	local function setupCharacter(char)
 		char.ChildAdded:Connect(function(child)
 			if child.Name == "Hielo" and antiFreeze then
@@ -643,6 +621,51 @@ local signAuraActive = false
 		end)
 	end
 
+	local unanchorAuraActive = false
+
+	local function startUnanchorAura()
+		unanchorAuraActive = true
+		local cfolder = isog and workspace.Cubes or workspace:FindFirstChild("Bricks")
+		task.spawn(function()
+			local pti = 0
+			while unanchorAuraActive do
+				local s, e = pcall(function()
+					local hrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+					if hrp and cfolder then
+						local paints = findbtoolsGlobal("Paint")
+						if #paints > 0 then
+							local cubes = {}
+							for _, v in pairs(cfolder:GetDescendants()) do
+								if v:IsA("BasePart") and v.Anchored == true then
+									table.insert(cubes, {v, (v.Position - hrp.Position).Magnitude})
+								end
+							end
+							table.sort(cubes, function(a, b) return a[2] < b[2] end)
+							for _, v in pairs(cubes) do
+								if not unanchorAuraActive then break end
+								pti = pti + 1
+								local pt = paints[(pti % #paints) + 1]
+								pt.bt.Parent = localPlayer.Character
+								pt.e:FireServer(
+									v[1],
+									Enum.NormalId.Top,
+									hrp.Position,
+									"material",
+									Color3.new(0, 0, 0),
+									"anchor",
+									""
+								)
+								task.wait(0.1)
+							end
+						end
+					end
+				end)
+				if not s then warn(e) end
+				task.wait()
+			end
+		end)
+	end
+
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -857,6 +880,14 @@ elseif text == "fling stop" or text == "unfling" then
 			autoPickup = false
 			print("Auto Pickup: OFF")
 
+			elseif text == "uaa" or text == "unanchoraura" then
+			startUnanchorAura()
+			print("UnanchorAura: ON")
+
+		elseif text == "unuaa" or text == "ununanchoraura" then
+			unanchorAuraActive = false
+			print("UnanchorAura: OFF")
+			
 		-- ---- AUTO DELCUBES ALL ----
 		elseif text == "autodelcubesall true" or text == "autodelcubesall t" or text == "ada t" then
 			autoDelCubesAll = true
