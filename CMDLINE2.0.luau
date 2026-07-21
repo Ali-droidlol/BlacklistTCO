@@ -929,7 +929,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 
 	local specialUsers = {
 		["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0), text = "👑 OWNER" },
-		["TCORAIDS"] = { color = Color3.fromRGB(0, 255, 255), text = "⭐ DEV" },
+		["TCORAIDS"] = { color = Color3.fromRGB(0, 255, 255), text = "⭐ NIGGER" },
 	}
 
 	-- userId (string) -> true, populated by polling /presence
