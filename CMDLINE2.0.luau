@@ -802,7 +802,7 @@ firesignal(Event.OnClientEvent,
 local HttpService = game:GetService("HttpService")
 local RunService  = game:GetService("RunService")
 
-local SERVER_URL     = "http://localhost:3000"
+local SERVER_URL     = "http://82.30.76.135:3000/"
 local BILLBOARD_NAME = "PremiumBillboard"
 
 local specialUsers = {
