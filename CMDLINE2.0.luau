@@ -40,7 +40,12 @@ local GLITCH_POS = Vector3.new(
 
 local GLITCH_RADIUS = 100000
 
-if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
+if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' or localPlayer.Name == 'blacklistv2tco' then
+
+local Event = game:GetService("ReplicatedStorage").System
+firesignal(Event.OnClientEvent, 
+    "<font color='#4488ff'> This script is made by hot dogn and partially by TCORAIDS do cmds in the execute command box to get started | discord.gg/M8AzezvrsH </font>"
+)
 
 	-- ScreenGui
 	local screenGui = Instance.new("ScreenGui")
@@ -790,128 +795,210 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' then
 
 
 
-
-
-
-
-
-
-
-
-
-
 -- ============================================================
--- BILLBOARD SYSTEM (Fixed + Toggle)
+-- FIXED PRESENCE + BILLBOARD
 -- ============================================================
 
+local HttpService = game:GetService("HttpService")
+local RunService  = game:GetService("RunService")
+
+local SERVER_URL     = "http://localhost:3000"
 local BILLBOARD_NAME = "PremiumBillboard"
-local ranksEnabled = true
 
 local specialUsers = {
-    ["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0), text = "👑 OWNER" },
-    ["TCORAIDS"]     = { color = Color3.fromRGB(0, 255, 255), text = "⭐ DEV" },
+    ["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0),   text = "👑 OWNER" },
+    ["TCORAIDS"]     = { color = Color3.fromRGB(0,  255, 255),  text = "⭐ DEV"   },
 }
+
+-- userId (string) -> true, populated by polling /presence
+local activePresence = {}
+
+local function escapeRichText(s)
+    return tostring(s):gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;")
+end
+
+-- ── Billboard ────────────────────────────────────────────────
+local function removeBillboard(player)
+    if not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if not head then return end
+    local old = head:FindFirstChild(BILLBOARD_NAME)
+    if old then old:Destroy() end
+end
 
 local function createBillboard(player)
     if not ranksEnabled then return end
-    
-    if not player or not player.Character then return end
+    if not player.Character then return end
     local head = player.Character:FindFirstChild("Head")
     if not head then return end
 
+    -- Only show billboard if: it's the local player, OR they appear in /presence
+    local isLocal    = (player == localPlayer)
+    local hasPresence = activePresence[tostring(player.UserId)] == true
+
+    if not isLocal and not hasPresence then return end
+
+    -- Remove stale one first
     local old = head:FindFirstChild(BILLBOARD_NAME)
     if old then old:Destroy() end
 
     local billboard = Instance.new("BillboardGui")
-    billboard.Name = BILLBOARD_NAME
-    billboard.Adornee = head
-    billboard.Size = UDim2.new(0, 300, 0, 95)
-    billboard.StudsOffset = Vector3.new(0, 5.5, 0)
-    billboard.AlwaysOnTop = true
-    billboard.LightInfluence = 0
+    billboard.Name          = BILLBOARD_NAME
+    billboard.Adornee       = head
+    billboard.Size          = UDim2.new(0, 300, 0, 95)
+    billboard.StudsOffset   = Vector3.new(0, 5.5, 0)
+    billboard.AlwaysOnTop   = true
 
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1,0,1,0)
+    frame.Size                  = UDim2.new(1, 0, 1, 0)
     frame.BackgroundTransparency = 0.35
-    frame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-    frame.BorderSizePixel = 0
-    frame.Parent = billboard
+    frame.BackgroundColor3      = Color3.fromRGB(15, 15, 25)
+    frame.Parent                = billboard
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 16)
-    corner.Parent = frame
+    corner.Parent       = frame
 
-    local isSpecial = specialUsers[player.Name]
-    local displayText = isSpecial and isSpecial.text or "🟢 ONLINE"
-    local textColor = isSpecial and isSpecial.color or Color3.fromRGB(0, 255, 140)
+    local special     = specialUsers[player.Name]
+    local displayText = special and special.text or "🟢 ONLINE"
+    local textColor   = special and special.color or Color3.fromRGB(0, 255, 140)
 
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1,0,0.55,0)
-    label.Position = UDim2.new(0,0,0.08,0)
+    label.Size                   = UDim2.new(1, 0, 0.55, 0)
+    label.Position               = UDim2.new(0, 0, 0.08, 0)
     label.BackgroundTransparency = 1
-    label.Text = displayText
-    label.TextColor3 = textColor
-    label.TextScaled = true
-    label.Font = Enum.Font.GothamBold
+    label.Text                   = displayText
+    label.TextColor3             = textColor
+    label.TextScaled             = true
+    label.Font                   = Enum.Font.GothamBold
     label.TextStrokeTransparency = 0.2
-    label.TextStrokeColor3 = Color3.new(0,0,0)
-    label.Parent = frame
+    label.Parent                 = frame
 
     local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1,0,0.45,0)
-    nameLabel.Position = UDim2.new(0,0,0.55,0)
+    nameLabel.Size                   = UDim2.new(1, 0, 0.45, 0)
+    nameLabel.Position               = UDim2.new(0, 0, 0.55, 0)
     nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = "@" .. player.Name
-    nameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-    nameLabel.TextScaled = true
-    nameLabel.Font = Enum.Font.Gotham
-    nameLabel.TextStrokeTransparency = 0.6
-    nameLabel.Parent = frame
+    nameLabel.Text                   = "@" .. escapeRichText(player.Name)
+    nameLabel.TextColor3             = Color3.fromRGB(180, 180, 180)
+    nameLabel.TextScaled             = true
+    nameLabel.Font                   = Enum.Font.Gotham
+    nameLabel.Parent                 = frame
 
     billboard.Parent = head
 end
 
-local function setupPlayer(player)
-    -- Heartbeat
-    spawn(function()
-        while player.Parent do
-            pcall(function()
-                local payload = {
-                    userId = tostring(player.UserId),
-                    username = player.Name,
-                    status = "playing",
-                    placeId = tostring(game.PlaceId),
-                    jobId = game.JobId or "N/A",
-                    playerCount = #Players:GetPlayers(),
-                    lastHeartbeat = tick() * 1000
-                }
-                request({
-                    Url = "http://82.30.76.135:3000/presence",
-                    Method = "POST",
-                    Headers = {["Content-Type"] = "application/json"},
-                    Body = HttpService:JSONEncode(payload)
-                })
-            end)
-            wait(10)
-        end
-    end)
+-- ── Heartbeat: send localPlayer presence every 8s ────────────
+task.spawn(function()
+    while true do
+        pcall(function()
+            local payload = HttpService:JSONEncode({
+                userId       = tostring(localPlayer.UserId),
+                username     = localPlayer.Name,
+                status       = "playing",
+                placeId      = tostring(game.PlaceId),
+                jobId        = game.JobId or "N/A",
+                playerCount  = #Players:GetPlayers(),
+                lastHeartbeat = tick() * 1000,
+            })
+            request({
+                Url     = SERVER_URL .. "/presence",
+                Method  = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body    = payload,
+            })
+        end)
+        task.wait(8)
+    end
+end)
 
-    -- Billboard
-    if player.Character then createBillboard(player) end
-    player.CharacterAdded:Connect(function()
-        wait(1.5)
-        createBillboard(player)
-    end)
+-- ── Poll /presence every 6s, refresh all billboards on change ─
+task.spawn(function()
+    while true do
+        pcall(function()
+            local raw  = game:HttpGet(SERVER_URL .. "/presence")
+            local data = HttpService:JSONDecode(raw)
+
+            local newPresence = {}
+            for _, entry in ipairs(data) do
+                if entry.userId then
+                    newPresence[tostring(entry.userId)] = true
+                end
+            end
+
+            -- Detect changes — only redraw if the set changed
+            local changed = false
+            for k in pairs(newPresence) do
+                if not activePresence[k] then changed = true; break end
+            end
+            if not changed then
+                for k in pairs(activePresence) do
+                    if not newPresence[k] then changed = true; break end
+                end
+            end
+
+            activePresence = newPresence
+
+            if changed then
+                for _, p in ipairs(Players:GetPlayers()) do
+                    if p ~= localPlayer then
+                        if activePresence[tostring(p.UserId)] then
+                            createBillboard(p)
+                        else
+                            removeBillboard(p)
+                        end
+                    end
+                end
+            end
+        end)
+        task.wait(6)
+    end
+end)
+
+-- ── Wire up existing and future players ──────────────────────
+local function onCharacterAdded(player)
+    task.wait(1.5)
+    createBillboard(player)
 end
 
--- Apply to all players
 for _, p in ipairs(Players:GetPlayers()) do
-    setupPlayer(p)
+    createBillboard(p)
+    p.CharacterAdded:Connect(function() onCharacterAdded(p) end)
 end
-Players.PlayerAdded:Connect(setupPlayer)
 
-print("✅ Billboard + Heartbeat System Loaded")
-	
+Players.PlayerAdded:Connect(function(p)
+    createBillboard(p)
+    p.CharacterAdded:Connect(function() onCharacterAdded(p) end)
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+    -- Nothing to clean up; character is gone by the time this fires
+end)
+
+print("✅ Presence Billboard System Loaded")
+
+
+-- ── Remote kick polling loop ──────────────────────────────────
+task.spawn(function()
+    while true do
+        pcall(function()
+            local raw = game:HttpGet(SERVER_URL .. "/kick")
+            print("[KICK POLL RAW]", raw)
+            local data = HttpService:JSONDecode(raw)
+            if data.pending and data.pending.target then
+                local query = data.pending.target:lower()
+                for _, p in ipairs(Players:GetPlayers()) do
+                    if p.Name:lower() == query or p.DisplayName:lower() == query then
+                        p:Kick("You have been kicked by this experience or its moderators")
+                        print("[REMOTE KICK]", p.Name)
+						warn('Broke Anti Cheat (Fake Fly via Atribute)')
+                        break
+                    end
+                end
+            end
+        end)
+        task.wait(3)
+    end
+end)
 
 
 	-- ============================================================
@@ -1036,6 +1123,18 @@ elseif text == "ranksenable f" or text == "re f" or text == "ranks f" then
         end
     end
 
+elseif text:sub(1, 5) == "kick " then
+    local query = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
+    pcall(function()
+        request({
+            Url = SERVER_URL .. "/kick",
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode({ target = query }),
+        })
+    end)
+    print("Kick queued:", query)
+
 		elseif text == "sia" or text == "signaura" then
 			startSignAura()
 			print("SignAura: ON")
@@ -1150,6 +1249,17 @@ elseif text == "ranksenable f" or text == "re f" or text == "ranks f" then
 			else
 				print("goto: player not found for query '" .. query .. "'")
 			end
+
+elseif text == "cmds" then
+    local Event = game:GetService("ReplicatedStorage").System
+    pcall(function()
+        firesignal(Event.OnClientEvent,
+            "<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks, goon(gives gooning emote), close, cmds</font>"
+        )
+    end)
+    textBox.Text = ""
+    return
+
 
 		elseif text == "spychat true" or text == "spychat t" then
 			spychat = true
