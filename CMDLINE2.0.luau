@@ -146,7 +146,7 @@ end
 -- ============================================================
 -- ORIGINAL SCRIPT STARTS HERE
 -- ============================================================
-if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or localPlayer.Name == "blacklistv2tco" then
+if localPlayer then
 	local Event = game:GetService("ReplicatedStorage").System
 	firesignal(
 		Event.OnClientEvent,
@@ -1148,6 +1148,11 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 	local specialUsers = {
 		["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0), text = "👑 OWNER" },
 		["TCORAIDS"] = { color = Color3.fromRGB(0, 255, 255), text = "⭐ NIGGER" },
+		["blacklistv2tco"] = { color = Color3.fromRGB(0, 255, 128), text = "🤖 Bot" },
+		["Blacklistv3tco"] = { color = Color3.fromRGB(0, 255, 128), text = "🤖 Bot" },
+		["Blacklistv4tco"] = { color = Color3.fromRGB(0, 255, 128), text = "🤖 Bot" },
+		["blacklistv5tco"] = { color = Color3.fromRGB(0, 255, 128), text = "🤖 Bot" },
+		["BLACKLIST_14180"] = { color = Color3.fromRGB(0, 255, 128), text = "🤖 Bot" },
 	}
 
 	-- userId (string) -> true, populated by polling /presence
