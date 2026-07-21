@@ -1691,6 +1691,15 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 					end
 				end
 			end)
+
+
+elseif text == "shop" then
+	TeleportService:Teleport(game.PlaceId, localPlayer)
+	queue_on_teleport(
+		'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
+	)
+	print("Hopping to a new server...")
+
 		elseif text == "close" then
 			_G.SCRIPTLOADEDCMDLINE = false
 			task.wait(0.2)
