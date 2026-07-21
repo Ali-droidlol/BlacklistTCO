@@ -20,6 +20,8 @@ local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
@@ -32,6 +34,118 @@ local GLITCH_POS = Vector3.new(1234566.625, 1234470.375, 1234566.625)
 
 local GLITCH_RADIUS = 100000
 
+-- ============================================================
+-- STASH SYSTEM (copied verbatim from your other script)
+-- ============================================================
+local seed = string.sub(game.JobId:gsub("%D+", ""), 1, 10)
+local rng = Random.new(seed)
+function randomoutlier(positiveonly)
+	local ro = rng:NextInteger(5000, 10000)
+	if positiveonly or rng:NextNumber() >= 0.5 then
+		return ro
+	else
+		return -ro
+	end
+end
+
+getgenv().stashposition = getgenv().stashposition or Vector3.new(
+	randomoutlier(),
+	randomoutlier(true) + 40,
+	randomoutlier()
+)
+
+local invisstashplatform = getgenv().invisstashplatform or Instance.new("Part")
+invisstashplatform.CFrame = CFrame.new(getgenv().stashposition - Vector3.new(0, 10, 0))
+invisstashplatform.Anchored = true
+invisstashplatform.Transparency = 0.9
+invisstashplatform.Color = Color3.fromRGB(0, 255, 0)
+invisstashplatform.Size = Vector3.new(200, 0, 1000)
+invisstashplatform.CanCollide = true
+invisstashplatform.Parent = workspace
+getgenv().invisstashplatform = invisstashplatform
+
+local stopstash = false
+local isog = workspace:FindFirstChild("Cubes") ~= nil
+local adminteam = (isog and game.Teams.Admin) or game.Teams.Chosen
+
+-- ============================================================
+-- HELPER FUNCTIONS FOR STASH (copied from your other script)
+-- ============================================================
+local function gcp(p, plr) -- get character part
+	local c = (plr ~= nil and plr.Character) or localPlayer.Character
+	p = p:lower()
+	if p == "hrp" then
+		p = "HumanoidRootPart"
+	elseif p == "hum" then
+		p = "Humanoid"
+	end
+	if c and c:FindFirstChild(p) then
+		return c:FindFirstChild(p)
+	else
+		return false
+	end
+end
+
+local function teleportto(cframe)
+	local hrp = gcp("hrp")
+	if hrp then
+		if typeof(cframe) == "Vector3" then
+			cframe = CFrame.new(cframe)
+		end
+		hrp.AssemblyLinearVelocity = Vector3.zero
+		hrp.AssemblyAngularVelocity = Vector3.zero
+		hrp.CFrame = cframe
+	end
+end
+
+function henl()
+	if localPlayer.Character:FindFirstChild("The Arkenstone") then
+		return true
+	else
+		if localPlayer.Backpack:FindFirstChild("The Arkenstone") then
+			return true
+		end
+	end
+	return false
+end
+
+function eenl(unequipothers, equipenlighten)
+	if not equipenlighten and localPlayer.Team == adminteam then
+		return true
+	end
+	if unequipothers then
+		for i, v in pairs(localPlayer.Character:GetChildren()) do
+			if v:IsA("Tool") and v.Name ~= "The Arkenstone" then
+				v.Parent = localPlayer.Backpack
+			end
+		end
+	end
+	if localPlayer.Character:FindFirstChild("The Arkenstone") then
+		return true, localPlayer.Character["The Arkenstone"]
+	else
+		if localPlayer.Backpack:FindFirstChild("The Arkenstone") then
+			localPlayer.Backpack["The Arkenstone"].Parent = localPlayer.Character
+			return true, localPlayer.Character["The Arkenstone"]
+		end
+	end
+	return false
+end
+
+function eb()
+	if localPlayer.Character:FindFirstChild("BlueBucket") then
+		return true, localPlayer.Character["BlueBucket"]
+	else
+		if localPlayer.Backpack:FindFirstChild("BlueBucket") then
+			localPlayer.Backpack["BlueBucket"].Parent = localPlayer.Character
+			return true, localPlayer.Character["BlueBucket"]
+		end
+	end
+	return false
+end
+
+-- ============================================================
+-- ORIGINAL SCRIPT STARTS HERE
+-- ============================================================
 if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or localPlayer.Name == "blacklistv2tco" then
 	local Event = game:GetService("ReplicatedStorage").System
 	firesignal(
@@ -163,6 +277,110 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 			end)
 		end
 		print("sendChat:", msg, "| success:", success)
+	end
+
+	-- ============================================================
+	-- STASH HELPER (uses sendChat and globals)
+	-- ============================================================
+	local function checkStash()
+		if not henl() then
+			stopstash = true
+			return false
+		end
+		if not localPlayer:HasTag("Muted") then
+			task.wait(0.5)
+			sendChat(";mute me")
+			task.wait(3.5)
+		end
+		return true
+	end
+
+	local function stashCommand(stashAmount)
+		if not henl() then
+			sendChat("You need enlighten to make a stash!")
+			return
+		end
+		
+		local oldAntiGlitch = antiGlitch
+		antiGlitch = false
+		task.wait(0.5)
+		
+		local lhrp = gcp("hrp")
+		if not lhrp then
+			return
+		end
+		
+		local op = lhrp.CFrame
+		local c = lhrp.Parent
+		c:PivotTo(CFrame.new(getgenv().stashposition + Vector3.new(0, 30, 0)))
+		
+		if not localPlayer:HasTag("Muted") then
+			task.wait(0.5)
+			sendChat(";mute me")
+		end
+		task.wait(0.5)
+		
+		for i = 1, stashAmount do
+			local cloneamt = #workspace.Clones[localPlayer.Name]:GetChildren()
+			local fullstashamt = math.floor(cloneamt)
+			local x = (fullstashamt % 4) * 10
+			local y = math.floor(fullstashamt / 4) * 10
+			
+			c:PivotTo(CFrame.new(getgenv().stashposition + Vector3.new(x, 0, y)))
+			task.wait(1)
+			
+			if not checkStash() then
+				break
+			end
+			
+			eenl(false, true)
+			if not eb() then
+				sendChat(";gear me 25162389")
+				task.wait(1)
+				eb()
+				eenl(false, true)
+			end
+			
+			if not checkStash() then
+				break
+			end
+			
+			sendChat(";freeze me")
+			task.wait(1)
+			
+			if not checkStash() then
+				break
+			end
+			
+			sendChat(";clone me")
+			task.wait(1)
+			
+			if not checkStash() then
+				break
+			end
+			
+			sendChat(";unfreeze me")
+			c:PivotTo(CFrame.new(getgenv().stashposition + Vector3.new(x, 15, y)))
+			
+			for i = 1, 10 do
+				task.wait(1)
+				if not checkStash() then
+					break
+				end
+			end
+		end
+		
+		task.wait(1)
+		sendChat(";unmute me")
+		
+		if gcp("hum") then
+			task.wait(1)
+			gcp("hum"):UnequipTools()
+			task.wait(0.5)
+			teleportto(op)
+		end
+		
+		antiGlitch = oldAntiGlitch
 	end
 
 	-- ============================================================
@@ -900,7 +1118,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 
 			if target then
 				local bangOffset = CFrame.new(0, 0, 1.1)
-				bangLoop = game:GetService("RunService").Stepped:Connect(function()
+				bangLoop = RunService.Stepped:Connect(function()
 					pcall(function()
 						local myHrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
 						local otherHrp = target.Character
@@ -1320,6 +1538,14 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 			else
 				print("fling: no target for '" .. query .. "'")
 			end
+		elseif text == 'fixvamp' then
+			workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+			workspace.CurrentCamera.CameraSubject = game:GetService("Players").LocalPlayer.Character.Humanoid
+			local StarterGui = game:GetService("StarterGui")
+
+			pcall(function()
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+			end)
 		elseif text == "fling stop" or text == "unfling" then
 			flingActive = false
 			print("Fling stopped")
@@ -1378,7 +1604,7 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 			pcall(function()
 				firesignal(
 					Event.OnClientEvent,
-					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks, goon(gives gooning emote), close, cmds</font>"
+					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks(enable/disable billboards), stash, stopstash, tostash, stashplatform, unstashplatform, close, cmds</font>"
 				)
 			end)
 			textBox.Text = ""
@@ -1470,6 +1696,37 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 			task.wait(0.2)
 			screenGui:Destroy()
 			return
+		-- ============================================================
+		-- STASH COMMANDS (exactly as in your other script)
+		-- ============================================================
+		elseif text == "stash" or text:sub(1, 6) == "stash " then
+			local amount = 2
+			if text:sub(1, 6) == "stash " then
+				local num = tonumber(text:sub(7))
+				if num and num > 0 then
+					amount = num
+				end
+			end
+			task.spawn(function()
+				stashCommand(amount)
+			end)
+			print("Stash started with amount:", amount)
+		elseif text == "stopstash" or text == "unstash" then
+			stopstash = true
+			print("Stash stopped")
+		elseif text == "tostash" or text == "gotostash" then
+			local hrp = gcp("hrp")
+			if hrp then
+				teleportto(CFrame.new(getgenv().stashposition + Vector3.new(-20, 30, -20)))
+			end
+		elseif text == "stashplatform" then
+			invisstashplatform.Transparency = 0.9
+			invisstashplatform.CanCollide = true
+			print("Stash platform: ON")
+		elseif text == "unstashplatform" then
+			invisstashplatform.Transparency = 1
+			invisstashplatform.CanCollide = false
+			print("Stash platform: OFF")
 		end
 
 		textBox.Text = ""
