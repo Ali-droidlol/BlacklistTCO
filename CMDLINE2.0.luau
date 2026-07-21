@@ -1696,7 +1696,25 @@ if localPlayer then
 					end
 				end
 			end)
+		
 
+
+			elseif text:sub(1, 4) == "fog " then
+	local density = tonumber(text:sub(5))
+
+	if density then
+		local fog = Lighting:FindFirstChild("Fog")
+		if fog then
+			fog.Density = density
+			print("Fog density set to", density)
+		else
+			warn("Fog object not found.")
+		end
+	else
+		warn("Usage: fog <number>")
+	end
+elseif text == 'gameid' then
+	setclipboard(game.GameId)
 
 elseif text == "shop" then
 	task.spawn(function()
