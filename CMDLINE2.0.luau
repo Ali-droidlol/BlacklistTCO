@@ -1694,11 +1694,62 @@ if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or local
 
 
 elseif text == "shop" then
-	TeleportService:Teleport(game.PlaceId, localPlayer)
-	queue_on_teleport(
-		'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
-	)
-	print("Hopping to a new server...")
+	task.spawn(function()
+		local HttpService = game:GetService("HttpService")
+		local TeleportService = game:GetService("TeleportService")
+		local universeId = game.GameId -- or use game.PlaceId? Actually placeId is the asset ID, but for servers we need universeId. Use game.GameId which is the universe ID.
+		local url = "https://games.roblox.com/v1/games/" .. universeId .. "/servers/Public?limit=100"
+		local success, data = pcall(function()
+			return HttpService:GetAsync(url)
+		end)
+		if success and data then
+			local decoded = HttpService:JSONDecode(data)
+			local servers = decoded.data
+			if servers and #servers > 0 then
+				-- filter out current server (jobId)
+				local currentJobId = game.JobId
+				local otherServers = {}
+				for _, s in ipairs(servers) do
+					if s.id ~= currentJobId then
+						table.insert(otherServers, s)
+					end
+				end
+				if #otherServers == 0 then
+					-- fallback to any server
+					otherServers = servers
+				end
+				local chosen = otherServers[math.random(1, #otherServers)]
+				local accessCode = chosen.accessCode or chosen.id -- sometimes accessCode is provided
+				if accessCode then
+					TeleportService:TeleportToPrivateServer(game.PlaceId, accessCode, {localPlayer})
+					queue_on_teleport(
+						'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
+					)
+					print("Hopping to server:", chosen.id)
+				else
+					-- fallback to regular teleport
+					TeleportService:Teleport(game.PlaceId, localPlayer)
+					queue_on_teleport(
+						'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
+					)
+					print("Fallback teleport to new server")
+				end
+			else
+				-- fallback
+				TeleportService:Teleport(game.PlaceId, localPlayer)
+				queue_on_teleport(
+					'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
+				)
+			end
+		else
+			-- fallback
+			TeleportService:Teleport(game.PlaceId, localPlayer)
+			queue_on_teleport(
+				'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
+			)
+		end
+	end)
+	print("Attempting to hop to a different server...")
 
 		elseif text == "close" then
 			_G.SCRIPTLOADEDCMDLINE = false
