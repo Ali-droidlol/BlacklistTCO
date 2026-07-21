@@ -8,7 +8,7 @@
 ]=]
 
 if _G.SCRIPTLOADEDCMDLINE == true then
-	warn('Local player already executed the script')
+	warn("Local player already executed the script")
 	return
 end
 
@@ -26,26 +26,18 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 
 local antiinvis = false
 
-local SPAWN_POS = Vector3.new(
-	1.979060471057892e-09,
-	26.699996948242188,
-	7.257767720147967e-10
-)
+local SPAWN_POS = Vector3.new(1.979060471057892e-09, 26.699996948242188, 7.257767720147967e-10)
 
-local GLITCH_POS = Vector3.new(
-	1234566.625,
-	1234470.375,
-	1234566.625
-)
+local GLITCH_POS = Vector3.new(1234566.625, 1234470.375, 1234566.625)
 
 local GLITCH_RADIUS = 100000
 
-if localPlayer.Name == "hotdogn_back" or localPlayer.Name == 'TCORAIDS' or localPlayer.Name == 'blacklistv2tco' then
-
-local Event = game:GetService("ReplicatedStorage").System
-firesignal(Event.OnClientEvent, 
-    "<font color='#4488ff'> This script is made by hot dogn and partially by TCORAIDS do cmds in the execute command box to get started | discord.gg/M8AzezvrsH </font>"
-)
+if localPlayer.Name == "hotdogn_back" or localPlayer.Name == "TCORAIDS" or localPlayer.Name == "blacklistv2tco" then
+	local Event = game:GetService("ReplicatedStorage").System
+	firesignal(
+		Event.OnClientEvent,
+		"<font color='#4488ff'> This script is made by hot dogn and partially by TCORAIDS do cmds in the execute command box to get started | discord.gg/M8AzezvrsH </font>"
+	)
 
 	-- ScreenGui
 	local screenGui = Instance.new("ScreenGui")
@@ -87,7 +79,8 @@ firesignal(Event.OnClientEvent,
 	textBox.BorderSizePixel = 0
 	textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 	textBox.TextScaled = true
-	textBox.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
+	textBox.FontFace =
+		Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic)
 	textBox.Size = UDim2.new(0.81301, 0, 0.28571, 0)
 	textBox.Position = UDim2.new(0.0935, 0, 0.36607, 0)
 	textBox.Parent = mainFrame
@@ -117,19 +110,19 @@ firesignal(Event.OnClientEvent,
 	local antiGlitch = false
 	local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 	local isog = workspace:FindFirstChild("Cubes") ~= nil
-    local ranksEnabled = true   -- Default: ON
+	local ranksEnabled = true -- Default: ON
 
 	-- ============================================================
 	-- TCO COLOR TABLES
 	-- ============================================================
 	local namecolors = {
-		peasant = {150, 103, 102},
-		arken   = {4, 175, 236},
-		admin   = {245, 205, 48},
-		hidden  = {255, 0, 0},
+		peasant = { 150, 103, 102 },
+		arken = { 4, 175, 236 },
+		admin = { 245, 205, 48 },
+		hidden = { 255, 0, 0 },
 	}
 	if isog then
-		namecolors.peasant = {128, 128, 128}
+		namecolors.peasant = { 128, 128, 128 }
 	end
 
 	local namecolorshex = {}
@@ -176,16 +169,21 @@ firesignal(Event.OnClientEvent,
 	-- ALE T / CHARACTER SETUP
 	-- ============================================================
 	local function onDied()
-		if not aleT then return end
+		if not aleT then
+			return
+		end
 
 		local char = localPlayer.Character
-		if not char then return end
+		if not char then
+			return
+		end
 
 		local backpack = localPlayer:FindFirstChildOfClass("Backpack")
-		local tool = char:FindFirstChild("The Arkenstone")
-			or (backpack and backpack:FindFirstChild("The Arkenstone"))
+		local tool = char:FindFirstChild("The Arkenstone") or (backpack and backpack:FindFirstChild("The Arkenstone"))
 
-		if not tool then return end
+		if not tool then
+			return
+		end
 
 		local humanoid = char:FindFirstChildWhichIsA("Humanoid")
 		if humanoid then
@@ -203,7 +201,9 @@ firesignal(Event.OnClientEvent,
 			if child.Name == "Hielo" and antiFreeze then
 				print("Player is frozen — killing")
 				local humanoid = char:FindFirstChild("Humanoid")
-				if humanoid then humanoid.Health = 0 end
+				if humanoid then
+					humanoid.Health = 0
+				end
 			end
 		end)
 
@@ -251,7 +251,9 @@ firesignal(Event.OnClientEvent,
 	-- ============================================================
 	task.spawn(function()
 		while task.wait(0.5) do
-			if not antiGlitch then continue end
+			if not antiGlitch then
+				continue
+			end
 			local char = localPlayer.Character
 			local hrp = char and char:FindFirstChild("HumanoidRootPart")
 			if hrp and (hrp.Position - GLITCH_POS).Magnitude <= GLITCH_RADIUS then
@@ -309,7 +311,9 @@ firesignal(Event.OnClientEvent,
 					if head and (head.Transparency >= 1 or head.LocalTransparencyModifier >= 1) then
 						print("Player is invisible - resetting")
 						local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-						if humanoid then humanoid.Health = 0 end
+						if humanoid then
+							humanoid.Health = 0
+						end
 					end
 				end
 			end
@@ -328,7 +332,10 @@ firesignal(Event.OnClientEvent,
 
 	local isTCO = false
 	for _, id in ipairs(TCO_PLACE_IDS) do
-		if game.PlaceId == id then isTCO = true; break end
+		if game.PlaceId == id then
+			isTCO = true
+			break
+		end
 	end
 
 	if isTCO then
@@ -336,7 +343,9 @@ firesignal(Event.OnClientEvent,
 			local plr = mdata.TextSource
 				and mdata.TextSource.UserId
 				and Players:GetPlayerByUserId(mdata.TextSource.UserId)
-			if not plr then return end
+			if not plr then
+				return
+			end
 
 			local cn
 			if plr.Neutral == true then
@@ -378,16 +387,40 @@ firesignal(Event.OnClientEvent,
 				end
 			end
 
-			local r   = namecolors[cn][1]
-			local g   = namecolors[cn][2]
-			local b   = namecolors[cn][3]
+			local r = namecolors[cn][1]
+			local g = namecolors[cn][2]
+			local b = namecolors[cn][3]
 			local hex = namecolorshex[cn]
 			local displayName = plr.DisplayName
 
 			if isog then
-				mdata.PrefixText = "<font color=\"" .. hex .. "\"><b><font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. icon .. "[" .. displayName .. "]: </font></b></font>"
+				mdata.PrefixText = '<font color="'
+					.. hex
+					.. "\"><b><font color='rgb("
+					.. r
+					.. ","
+					.. g
+					.. ","
+					.. b
+					.. ")'>"
+					.. icon
+					.. "["
+					.. displayName
+					.. "]: </font></b></font>"
 			else
-				mdata.PrefixText = "<font color=\"" .. hex .. "\"><i><font color='rgb(" .. r .. "," .. g .. "," .. b .. ")'>" .. icon .. "(" .. displayName .. ") </font></i></font>"
+				mdata.PrefixText = '<font color="'
+					.. hex
+					.. "\"><i><font color='rgb("
+					.. r
+					.. ","
+					.. g
+					.. ","
+					.. b
+					.. ")'>"
+					.. icon
+					.. "("
+					.. displayName
+					.. ") </font></i></font>"
 			end
 		end
 	end
@@ -404,7 +437,9 @@ firesignal(Event.OnClientEvent,
 		local hum = char and char:FindFirstChildOfClass("Humanoid")
 		local root = hum and hum.RootPart
 		local tChar = targetPlayer.Character
-		if not tChar then return end
+		if not tChar then
+			return
+		end
 
 		local tHum = tChar:FindFirstChildOfClass("Humanoid")
 		local tRoot = tHum and tHum.RootPart
@@ -412,13 +447,17 @@ firesignal(Event.OnClientEvent,
 		local accessory = tChar:FindFirstChildOfClass("Accessory")
 		local handle = accessory and accessory:FindFirstChild("Handle")
 
-		if not (char and hum and root) then return end
+		if not (char and hum and root) then
+			return
+		end
 
 		if root.Velocity.Magnitude < 50 then
 			getgenv().OldPos = root.CFrame
 		end
 
-		if tHum and tHum.Sit then return end
+		if tHum and tHum.Sit then
+			return
+		end
 
 		if tHead then
 			workspace.CurrentCamera.CameraSubject = tHead
@@ -428,7 +467,9 @@ firesignal(Event.OnClientEvent,
 			workspace.CurrentCamera.CameraSubject = tHum
 		end
 
-		if not tChar:FindFirstChildWhichIsA("BasePart") then return end
+		if not tChar:FindFirstChildWhichIsA("BasePart") then
+			return
+		end
 
 		local function FPos(basePart, pos, ang)
 			root.CFrame = CFrame.new(basePart.Position) * pos * ang
@@ -445,17 +486,37 @@ firesignal(Event.OnClientEvent,
 				if root and tHum then
 					if basePart.Velocity.Magnitude < 50 then
 						angle = angle + 100
-						FPos(basePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+						FPos(
+							basePart,
+							CFrame.new(0, 1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25,
+							CFrame.Angles(math.rad(angle), 0, 0)
+						)
 						task.wait()
-						FPos(basePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+						FPos(
+							basePart,
+							CFrame.new(0, -1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25,
+							CFrame.Angles(math.rad(angle), 0, 0)
+						)
 						task.wait()
-						FPos(basePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+						FPos(
+							basePart,
+							CFrame.new(0, 1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25,
+							CFrame.Angles(math.rad(angle), 0, 0)
+						)
 						task.wait()
-						FPos(basePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(angle), 0, 0))
+						FPos(
+							basePart,
+							CFrame.new(0, -1.5, 0) + tHum.MoveDirection * basePart.Velocity.Magnitude / 1.25,
+							CFrame.Angles(math.rad(angle), 0, 0)
+						)
 						task.wait()
 						FPos(basePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection, CFrame.Angles(math.rad(angle), 0, 0))
 						task.wait()
-						FPos(basePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection, CFrame.Angles(math.rad(angle), 0, 0))
+						FPos(
+							basePart,
+							CFrame.new(0, -1.5, 0) + tHum.MoveDirection,
+							CFrame.Angles(math.rad(angle), 0, 0)
+						)
 						task.wait()
 					else
 						FPos(basePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
@@ -477,7 +538,7 @@ firesignal(Event.OnClientEvent,
 			until t + timeToWait < tick() or not flingActive
 		end
 
-		workspace.FallenPartsDestroyHeight = 0/0
+		workspace.FallenPartsDestroyHeight = 0 / 0
 
 		local bv = Instance.new("BodyVelocity")
 		bv.Parent = root
@@ -524,15 +585,25 @@ firesignal(Event.OnClientEvent,
 		local char = localPlayer.Character
 		if backpack then
 			for _, v in pairs(backpack:GetChildren()) do
-				if v:IsA("Tool") and v:FindFirstChild("Script") and v.Script:FindFirstChild("Event") and v.Name == name then
-					table.insert(btools, {bt=v, e=v.Script.Event})
+				if
+					v:IsA("Tool")
+					and v:FindFirstChild("Script")
+					and v.Script:FindFirstChild("Event")
+					and v.Name == name
+				then
+					table.insert(btools, { bt = v, e = v.Script.Event })
 				end
 			end
 		end
 		if char then
 			for _, v in pairs(char:GetChildren()) do
-				if v:IsA("Tool") and v:FindFirstChild("Script") and v.Script:FindFirstChild("Event") and v.Name == name then
-					table.insert(btools, {bt=v, e=v.Script.Event})
+				if
+					v:IsA("Tool")
+					and v:FindFirstChild("Script")
+					and v.Script:FindFirstChild("Event")
+					and v.Name == name
+				then
+					table.insert(btools, { bt = v, e = v.Script.Event })
 				end
 			end
 		end
@@ -561,16 +632,26 @@ firesignal(Event.OnClientEvent,
 										local cubes = {}
 										for _, v in pairs(cfolder:GetDescendants()) do
 											if v:IsA("BasePart") then
-												table.insert(cubes, {v, (v.Position - hrp2.Position).Magnitude})
+												table.insert(cubes, { v, (v.Position - hrp2.Position).Magnitude })
 											end
 										end
-										table.sort(cubes, function(a, b) return a[2] < b[2] end)
+										table.sort(cubes, function(a, b)
+											return a[2] < b[2]
+										end)
 										for _, v in pairs(cubes) do
-											if not griefActive then break end
+											if not griefActive then
+												break
+											end
 											local dt = dtools[math.random(#dtools)]
 											dt.bt.Parent = localPlayer.Character
 											if isog then
-												dt.e:FireServer(hrp.Position, Enum.NormalId.Top, v[1], Color3.new(0,0,0), "Smooth")
+												dt.e:FireServer(
+													hrp.Position,
+													Enum.NormalId.Top,
+													v[1],
+													Color3.new(0, 0, 0),
+													"Smooth"
+												)
 											else
 												dt.e:FireServer(v[1], hrp.Position)
 											end
@@ -582,7 +663,9 @@ firesignal(Event.OnClientEvent,
 						end
 					end
 				end)
-				if not s then warn(e) end
+				if not s then
+					warn(e)
+				end
 				task.wait()
 			end
 		end)
@@ -604,11 +687,23 @@ firesignal(Event.OnClientEvent,
 						local signs = findbtoolsGlobal("Sign")
 						while #signs > 0 and signAuraActive do
 							sti = sti + 1
-							local randompos = hrp.Position + CFrame.lookAt(Vector3.zero, Vector3.new(math.random(-1,1), 0, math.random(-1,1)).Unit).LookVector * 20
+							local randompos = hrp.Position
+								+ CFrame.lookAt(
+										Vector3.zero,
+										Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)).Unit
+									).LookVector
+									* 20
 							local st = signs[(sti % #signs) + 1]
 							st.bt.Parent = localPlayer.Character
 							if isog then
-								st.e:FireServer(randompos, Enum.NormalId.Top, workspace:FindFirstChild("Trrain") and workspace.Trrain:FindFirstChild("Mesh", true) or workspace.Terrain, Color3.new(1,1,1), "Smooth")
+								st.e:FireServer(
+									randompos,
+									Enum.NormalId.Top,
+									workspace:FindFirstChild("Trrain") and workspace.Trrain:FindFirstChild("Mesh", true)
+										or workspace.Terrain,
+									Color3.new(1, 1, 1),
+									"Smooth"
+								)
 							else
 								st.e:FireServer(workspace.Terrain, Enum.NormalId.Top, randompos)
 							end
@@ -617,7 +712,9 @@ firesignal(Event.OnClientEvent,
 						end
 					end
 				end)
-				if not s then warn(e) end
+				if not s then
+					warn(e)
+				end
 				task.wait()
 			end
 		end)
@@ -642,12 +739,16 @@ firesignal(Event.OnClientEvent,
 							local cubes = {}
 							for _, v in pairs(cfolder:GetDescendants()) do
 								if v:IsA("BasePart") and v.Anchored == true then
-									table.insert(cubes, {v, (v.Position - hrp.Position).Magnitude})
+									table.insert(cubes, { v, (v.Position - hrp.Position).Magnitude })
 								end
 							end
-							table.sort(cubes, function(a, b) return a[2] < b[2] end)
+							table.sort(cubes, function(a, b)
+								return a[2] < b[2]
+							end)
 							for _, v in pairs(cubes) do
-								if not unanchorAuraActive then break end
+								if not unanchorAuraActive then
+									break
+								end
 								pti = pti + 1
 								local pt = paints[(pti % #paints) + 1]
 								pt.bt.Parent = localPlayer.Character
@@ -665,7 +766,9 @@ firesignal(Event.OnClientEvent,
 						end
 					end
 				end)
-				if not s then warn(e) end
+				if not s then
+					warn(e)
+				end
 				task.wait()
 			end
 		end)
@@ -690,10 +793,12 @@ firesignal(Event.OnClientEvent,
 							local cubes = {}
 							for _, v in pairs(cfolder:GetDescendants()) do
 								if v:IsA("BasePart") then
-									table.insert(cubes, {v, (v.Position - hrp.Position).Magnitude})
+									table.insert(cubes, { v, (v.Position - hrp.Position).Magnitude })
 								end
 							end
-							table.sort(cubes, function(a, b) return a[2] < b[2] end)
+							table.sort(cubes, function(a, b)
+								return a[2] < b[2]
+							end)
 							local sides = {
 								Enum.NormalId.Front,
 								Enum.NormalId.Back,
@@ -702,7 +807,9 @@ firesignal(Event.OnClientEvent,
 								Enum.NormalId.Top,
 							}
 							for _, v in pairs(cubes) do
-								if not sprayAuraActive then break end
+								if not sprayAuraActive then
+									break
+								end
 								pti = pti + 1
 								local pt = paints[(pti % #paints) + 1]
 								pt.bt.Parent = localPlayer.Character
@@ -720,13 +827,15 @@ firesignal(Event.OnClientEvent,
 						end
 					end
 				end)
-				if not s then warn(e) end
+				if not s then
+					warn(e)
+				end
 				task.wait()
 			end
 		end)
 	end
 
--- ============================================================
+	-- ============================================================
 	-- IY BANG
 	-- ============================================================
 	local bangAnim = nil
@@ -735,10 +844,22 @@ firesignal(Event.OnClientEvent,
 	local bangLoop = nil
 
 	local function stopBang()
-		if bangDied then bangDied:Disconnect(); bangDied = nil end
-		if bangLoop then bangLoop:Disconnect(); bangLoop = nil end
-		if bangTrack then bangTrack:Stop(); bangTrack = nil end
-		if bangAnim then bangAnim:Destroy(); bangAnim = nil end
+		if bangDied then
+			bangDied:Disconnect()
+			bangDied = nil
+		end
+		if bangLoop then
+			bangLoop:Disconnect()
+			bangLoop = nil
+		end
+		if bangTrack then
+			bangTrack:Stop()
+			bangTrack = nil
+		end
+		if bangAnim then
+			bangAnim:Destroy()
+			bangAnim = nil
+		end
 	end
 
 	local function startBang(targetName, speed)
@@ -747,7 +868,9 @@ firesignal(Event.OnClientEvent,
 
 		local char = localPlayer.Character
 		local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
-		if not humanoid then return end
+		if not humanoid then
+			return
+		end
 
 		local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
 
@@ -765,8 +888,10 @@ firesignal(Event.OnClientEvent,
 			local target = nil
 			for _, p in pairs(Players:GetPlayers()) do
 				if p ~= localPlayer then
-					if p.Name:lower():sub(1, #targetName) == targetName:lower()
-						or p.DisplayName:lower():sub(1, #targetName) == targetName:lower() then
+					if
+						p.Name:lower():sub(1, #targetName) == targetName:lower()
+						or p.DisplayName:lower():sub(1, #targetName) == targetName:lower()
+					then
 						target = p
 						break
 					end
@@ -778,10 +903,11 @@ firesignal(Event.OnClientEvent,
 				bangLoop = game:GetService("RunService").Stepped:Connect(function()
 					pcall(function()
 						local myHrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
-						local otherHrp = target.Character and (
-							target.Character:FindFirstChild("HumanoidRootPart")
-							or target.Character:FindFirstChild("Torso")
-						)
+						local otherHrp = target.Character
+							and (
+								target.Character:FindFirstChild("HumanoidRootPart")
+								or target.Character:FindFirstChild("Torso")
+							)
 						if myHrp and otherHrp then
 							myHrp.CFrame = otherHrp.CFrame * bangOffset
 						end
@@ -791,215 +917,235 @@ firesignal(Event.OnClientEvent,
 		end
 	end
 
+	-- ============================================================
+	-- FIXED PRESENCE + BILLBOARD
+	-- ============================================================
 
+	local HttpService = game:GetService("HttpService")
+	local RunService = game:GetService("RunService")
 
+	local SERVER_URL = "http://82.30.76.135:3000"
+	local BILLBOARD_NAME = "PremiumBillboard"
 
+	local specialUsers = {
+		["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0), text = "👑 OWNER" },
+		["TCORAIDS"] = { color = Color3.fromRGB(0, 255, 255), text = "⭐ DEV" },
+	}
 
--- ============================================================
--- FIXED PRESENCE + BILLBOARD
--- ============================================================
+	-- userId (string) -> true, populated by polling /presence
+	local activePresence = {}
 
-local HttpService = game:GetService("HttpService")
-local RunService  = game:GetService("RunService")
+	local function escapeRichText(s)
+		return tostring(s):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+	end
 
-local SERVER_URL     = "http://82.30.76.135:3000/"
-local BILLBOARD_NAME = "PremiumBillboard"
+	-- ── Billboard ────────────────────────────────────────────────
+	local function removeBillboard(player)
+		if not player.Character then
+			return
+		end
+		local head = player.Character:FindFirstChild("Head")
+		if not head then
+			return
+		end
+		local old = head:FindFirstChild(BILLBOARD_NAME)
+		if old then
+			old:Destroy()
+		end
+	end
 
-local specialUsers = {
-    ["hotdogn_back"] = { color = Color3.fromRGB(255, 215, 0),   text = "👑 OWNER" },
-    ["TCORAIDS"]     = { color = Color3.fromRGB(0,  255, 255),  text = "⭐ DEV"   },
-}
+	local function createBillboard(player)
+		if not ranksEnabled then
+			return
+		end
+		if not player.Character then
+			return
+		end
+		local head = player.Character:FindFirstChild("Head")
+		if not head then
+			return
+		end
 
--- userId (string) -> true, populated by polling /presence
-local activePresence = {}
+		-- Only show billboard if: it's the local player, OR they appear in /presence
+		local isLocal = (player == localPlayer)
+		local hasPresence = activePresence[tostring(player.UserId)] == true
 
-local function escapeRichText(s)
-    return tostring(s):gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;")
-end
+		if not isLocal and not hasPresence then
+			return
+		end
 
--- ── Billboard ────────────────────────────────────────────────
-local function removeBillboard(player)
-    if not player.Character then return end
-    local head = player.Character:FindFirstChild("Head")
-    if not head then return end
-    local old = head:FindFirstChild(BILLBOARD_NAME)
-    if old then old:Destroy() end
-end
+		-- Remove stale one first
+		local old = head:FindFirstChild(BILLBOARD_NAME)
+		if old then
+			old:Destroy()
+		end
 
-local function createBillboard(player)
-    if not ranksEnabled then return end
-    if not player.Character then return end
-    local head = player.Character:FindFirstChild("Head")
-    if not head then return end
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = BILLBOARD_NAME
+		billboard.Adornee = head
+		billboard.Size = UDim2.new(0, 300, 0, 95)
+		billboard.StudsOffset = Vector3.new(0, 5.5, 0)
+		billboard.AlwaysOnTop = true
 
-    -- Only show billboard if: it's the local player, OR they appear in /presence
-    local isLocal    = (player == localPlayer)
-    local hasPresence = activePresence[tostring(player.UserId)] == true
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.new(1, 0, 1, 0)
+		frame.BackgroundTransparency = 0.35
+		frame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+		frame.Parent = billboard
 
-    if not isLocal and not hasPresence then return end
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 16)
+		corner.Parent = frame
 
-    -- Remove stale one first
-    local old = head:FindFirstChild(BILLBOARD_NAME)
-    if old then old:Destroy() end
+		local special = specialUsers[player.Name]
+		local displayText = special and special.text or "🟢 ONLINE"
+		local textColor = special and special.color or Color3.fromRGB(0, 255, 140)
 
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name          = BILLBOARD_NAME
-    billboard.Adornee       = head
-    billboard.Size          = UDim2.new(0, 300, 0, 95)
-    billboard.StudsOffset   = Vector3.new(0, 5.5, 0)
-    billboard.AlwaysOnTop   = true
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, 0, 0.55, 0)
+		label.Position = UDim2.new(0, 0, 0.08, 0)
+		label.BackgroundTransparency = 1
+		label.Text = displayText
+		label.TextColor3 = textColor
+		label.TextScaled = true
+		label.Font = Enum.Font.GothamBold
+		label.TextStrokeTransparency = 0.2
+		label.Parent = frame
 
-    local frame = Instance.new("Frame")
-    frame.Size                  = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundTransparency = 0.35
-    frame.BackgroundColor3      = Color3.fromRGB(15, 15, 25)
-    frame.Parent                = billboard
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size = UDim2.new(1, 0, 0.45, 0)
+		nameLabel.Position = UDim2.new(0, 0, 0.55, 0)
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.Text = "@" .. escapeRichText(player.Name)
+		nameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+		nameLabel.TextScaled = true
+		nameLabel.Font = Enum.Font.Gotham
+		nameLabel.Parent = frame
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 16)
-    corner.Parent       = frame
+		billboard.Parent = head
+	end
 
-    local special     = specialUsers[player.Name]
-    local displayText = special and special.text or "🟢 ONLINE"
-    local textColor   = special and special.color or Color3.fromRGB(0, 255, 140)
+	-- ── Heartbeat: send localPlayer presence every 8s ────────────
+	task.spawn(function()
+		while true do
+			pcall(function()
+				local payload = HttpService:JSONEncode({
+					userId = tostring(localPlayer.UserId),
+					username = localPlayer.Name,
+					status = "playing",
+					placeId = tostring(game.PlaceId),
+					jobId = game.JobId or "N/A",
+					playerCount = #Players:GetPlayers(),
+					lastHeartbeat = tick() * 1000,
+				})
+				request({
+					Url = SERVER_URL .. "/presence",
+					Method = "POST",
+					Headers = { ["Content-Type"] = "application/json" },
+					Body = payload,
+				})
+			end)
+			task.wait(8)
+		end
+	end)
 
-    local label = Instance.new("TextLabel")
-    label.Size                   = UDim2.new(1, 0, 0.55, 0)
-    label.Position               = UDim2.new(0, 0, 0.08, 0)
-    label.BackgroundTransparency = 1
-    label.Text                   = displayText
-    label.TextColor3             = textColor
-    label.TextScaled             = true
-    label.Font                   = Enum.Font.GothamBold
-    label.TextStrokeTransparency = 0.2
-    label.Parent                 = frame
+	-- ── Poll /presence every 6s, refresh all billboards on change ─
+	task.spawn(function()
+		while true do
+			pcall(function()
+				local raw = game:HttpGet(SERVER_URL .. "/presence")
+				local data = HttpService:JSONDecode(raw)
 
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size                   = UDim2.new(1, 0, 0.45, 0)
-    nameLabel.Position               = UDim2.new(0, 0, 0.55, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text                   = "@" .. escapeRichText(player.Name)
-    nameLabel.TextColor3             = Color3.fromRGB(180, 180, 180)
-    nameLabel.TextScaled             = true
-    nameLabel.Font                   = Enum.Font.Gotham
-    nameLabel.Parent                 = frame
+				local newPresence = {}
+				for _, entry in ipairs(data) do
+					if entry.userId then
+						newPresence[tostring(entry.userId)] = true
+					end
+				end
 
-    billboard.Parent = head
-end
+				-- Detect changes — only redraw if the set changed
+				local changed = false
+				for k in pairs(newPresence) do
+					if not activePresence[k] then
+						changed = true
+						break
+					end
+				end
+				if not changed then
+					for k in pairs(activePresence) do
+						if not newPresence[k] then
+							changed = true
+							break
+						end
+					end
+				end
 
--- ── Heartbeat: send localPlayer presence every 8s ────────────
-task.spawn(function()
-    while true do
-        pcall(function()
-            local payload = HttpService:JSONEncode({
-                userId       = tostring(localPlayer.UserId),
-                username     = localPlayer.Name,
-                status       = "playing",
-                placeId      = tostring(game.PlaceId),
-                jobId        = game.JobId or "N/A",
-                playerCount  = #Players:GetPlayers(),
-                lastHeartbeat = tick() * 1000,
-            })
-            request({
-                Url     = SERVER_URL .. "/presence",
-                Method  = "POST",
-                Headers = { ["Content-Type"] = "application/json" },
-                Body    = payload,
-            })
-        end)
-        task.wait(8)
-    end
-end)
+				activePresence = newPresence
 
--- ── Poll /presence every 6s, refresh all billboards on change ─
-task.spawn(function()
-    while true do
-        pcall(function()
-            local raw  = game:HttpGet(SERVER_URL .. "/presence")
-            local data = HttpService:JSONDecode(raw)
+				if changed then
+					for _, p in ipairs(Players:GetPlayers()) do
+						if p ~= localPlayer then
+							if activePresence[tostring(p.UserId)] then
+								createBillboard(p)
+							else
+								removeBillboard(p)
+							end
+						end
+					end
+				end
+			end)
+			task.wait(6)
+		end
+	end)
 
-            local newPresence = {}
-            for _, entry in ipairs(data) do
-                if entry.userId then
-                    newPresence[tostring(entry.userId)] = true
-                end
-            end
+	-- ── Wire up existing and future players ──────────────────────
+	local function onCharacterAdded(player)
+		task.wait(1.5)
+		createBillboard(player)
+	end
 
-            -- Detect changes — only redraw if the set changed
-            local changed = false
-            for k in pairs(newPresence) do
-                if not activePresence[k] then changed = true; break end
-            end
-            if not changed then
-                for k in pairs(activePresence) do
-                    if not newPresence[k] then changed = true; break end
-                end
-            end
+	for _, p in ipairs(Players:GetPlayers()) do
+		createBillboard(p)
+		p.CharacterAdded:Connect(function()
+			onCharacterAdded(p)
+		end)
+	end
 
-            activePresence = newPresence
+	Players.PlayerAdded:Connect(function(p)
+		createBillboard(p)
+		p.CharacterAdded:Connect(function()
+			onCharacterAdded(p)
+		end)
+	end)
 
-            if changed then
-                for _, p in ipairs(Players:GetPlayers()) do
-                    if p ~= localPlayer then
-                        if activePresence[tostring(p.UserId)] then
-                            createBillboard(p)
-                        else
-                            removeBillboard(p)
-                        end
-                    end
-                end
-            end
-        end)
-        task.wait(6)
-    end
-end)
+	Players.PlayerRemoving:Connect(function(p)
+		-- Nothing to clean up; character is gone by the time this fires
+	end)
 
--- ── Wire up existing and future players ──────────────────────
-local function onCharacterAdded(player)
-    task.wait(1.5)
-    createBillboard(player)
-end
+	print("✅ Presence Billboard System Loaded")
 
-for _, p in ipairs(Players:GetPlayers()) do
-    createBillboard(p)
-    p.CharacterAdded:Connect(function() onCharacterAdded(p) end)
-end
-
-Players.PlayerAdded:Connect(function(p)
-    createBillboard(p)
-    p.CharacterAdded:Connect(function() onCharacterAdded(p) end)
-end)
-
-Players.PlayerRemoving:Connect(function(p)
-    -- Nothing to clean up; character is gone by the time this fires
-end)
-
-print("✅ Presence Billboard System Loaded")
-
-
--- ── Remote kick polling loop ──────────────────────────────────
-task.spawn(function()
-    while true do
-        pcall(function()
-            local raw = game:HttpGet(SERVER_URL .. "/kick")
-            print("[KICK POLL RAW]", raw)
-            local data = HttpService:JSONDecode(raw)
-            if data.pending and data.pending.target then
-                local query = data.pending.target:lower()
-                for _, p in ipairs(Players:GetPlayers()) do
-                    if p.Name:lower() == query or p.DisplayName:lower() == query then
-                        p:Kick("You have been kicked by this experience or its moderators")
-                        print("[REMOTE KICK]", p.Name)
-						warn('Broke Anti Cheat (Fake Fly via Atribute)')
-                        break
-                    end
-                end
-            end
-        end)
-        task.wait(3)
-    end
-end)
-
+	-- ── Remote kick polling loop ──────────────────────────────────
+	task.spawn(function()
+		while true do
+			pcall(function()
+				local raw = game:HttpGet(SERVER_URL .. "/kick")
+				print("[KICK POLL RAW]", raw)
+				local data = HttpService:JSONDecode(raw)
+				if data.pending and data.pending.target then
+					local query = data.pending.target:lower()
+					for _, p in ipairs(Players:GetPlayers()) do
+						if p.Name:lower() == query or p.DisplayName:lower() == query then
+							p:Kick("You have been kicked by this experience or its moderators")
+							print("[REMOTE KICK]", p.Name)
+							warn("Broke Anti Cheat (Fake Fly via Atribute)")
+							break
+						end
+					end
+				end
+			end)
+			task.wait(3)
+		end
+	end)
 
 	-- ============================================================
 	-- EXECUTE COMMAND
@@ -1009,59 +1155,53 @@ end)
 
 		if text == "fly" then
 			localPlayer:SetAttribute("Flying", true)
-
 		elseif text == "unfly" then
 			localPlayer:SetAttribute("Flying", false)
-
 		elseif text == "reset" then
 			local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-			if humanoid then humanoid.Health = 0 end
-
+			if humanoid then
+				humanoid.Health = 0
+			end
 		elseif text == "rejoin" or text == "rj" then
 			TeleportService:Teleport(game.PlaceId, localPlayer)
-			queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()')
-
+			queue_on_teleport(
+				'loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/CMDLINE2.0.luau"))()'
+			)
 		elseif text == "getjobid" or text == "jobid" or text == "getjob" then
 			setclipboard(game.JobId)
 			print("Job ID copied:", game.JobId)
-
 		elseif text == "antifreeze true" or text == "antifreeze t" then
 			antiFreeze = true
 			print("Anti Freeze: ON")
-
 		elseif text == "antifreeze false" or text == "antifreeze f" then
 			antiFreeze = false
 			print("Anti Freeze: OFF")
-
 		elseif text == "antiblind true" or text == "antiblind t" then
 			local blind = playerGui:FindFirstChild("Blind")
 			if blind and blind:FindFirstChild("Frame") then
 				blind.Frame.Visible = false
 			end
-
 		elseif text == "antiblind false" or text == "antiblind f" then
 			local blind = playerGui:FindFirstChild("Blind")
 			if blind and blind:FindFirstChild("Frame") then
 				blind.Frame.Visible = true
 			end
-
 		elseif text == "antimyopic true" or text == "antimyopic t" then
 			local blur = Lighting:FindFirstChild("Blur")
-			if blur then blur.Enabled = false end
-
+			if blur then
+				blur.Enabled = false
+			end
 		elseif text == "antimyopic false" or text == "antimyopic f" then
 			local blur = Lighting:FindFirstChild("Blur")
-			if blur then blur.Enabled = true end
-
-
+			if blur then
+				blur.Enabled = true
+			end
 		elseif text == "ale t" then
 			aleT = true
 			print("ALE T: ON")
-
 		elseif text == "ale f" then
 			aleT = false
 			print("ALE F: OFF")
-
 		elseif text:sub(1, 6) == "speed " then
 			local speed = tonumber(text:sub(7))
 			if speed then
@@ -1074,91 +1214,77 @@ end)
 			else
 				warn("Usage: speed <number>")
 			end
-
-			elseif text:sub(1, 4) == "bang" then
+		elseif text:sub(1, 4) == "bang" then
 			local parts = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
 			local args = string.split(parts, " ")
 			local targetName = args[1] ~= "" and args[1] or nil
 			local speed = tonumber(args[2]) or 3
 			startBang(targetName, speed)
 			print("Bang: ON")
-
 		elseif text == "unbang" then
 			stopBang()
 			print("Bang: OFF")
-
 		elseif text == "antiglitch true" or text == "antiglitch t" or text == "ag true" or text == "ag t" then
 			antiGlitch = true
 			print("Anti Glitch: ON")
-
 		elseif text == "antiglitch false" or text == "antiglitch f" or text == "ag false" or text == "ag f" then
 			antiGlitch = false
 			print("Anti Glitch: OFF")
-
 		elseif text == "dela" then
 			startGriefAura()
 			print("DeleteAura: ON")
-
 		elseif text == "undela" then
 			griefActive = false
 			print("DeleteAura: OFF")
-
-			elseif text == "ranksenable t" or text == "re t" or text == "ranks t" then
-    ranksEnabled = true
-    print("Ranks / Billboards: ENABLED")
-    for _, p in ipairs(Players:GetPlayers()) do
-        createBillboard(p)
-    end
-
-elseif text == "ranksenable f" or text == "re f" or text == "ranks f" then
-    ranksEnabled = false
-    print("Ranks / Billboards: DISABLED")
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p.Character then
-            local head = p.Character:FindFirstChild("Head")
-            if head then
-                local old = head:FindFirstChild(BILLBOARD_NAME)
-                if old then old:Destroy() end
-            end
-        end
-    end
-
-elseif text:sub(1, 5) == "kick " then
-    local query = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
-    pcall(function()
-        request({
-            Url = SERVER_URL .. "/kick",
-            Method = "POST",
-            Headers = { ["Content-Type"] = "application/json" },
-            Body = HttpService:JSONEncode({ target = query }),
-        })
-    end)
-    print("Kick queued:", query)
-
+		elseif text == "ranksenable t" or text == "re t" or text == "ranks t" then
+			ranksEnabled = true
+			print("Ranks / Billboards: ENABLED")
+			for _, p in ipairs(Players:GetPlayers()) do
+				createBillboard(p)
+			end
+		elseif text == "ranksenable f" or text == "re f" or text == "ranks f" then
+			ranksEnabled = false
+			print("Ranks / Billboards: DISABLED")
+			for _, p in ipairs(Players:GetPlayers()) do
+				if p.Character then
+					local head = p.Character:FindFirstChild("Head")
+					if head then
+						local old = head:FindFirstChild(BILLBOARD_NAME)
+						if old then
+							old:Destroy()
+						end
+					end
+				end
+			end
+		elseif text:sub(1, 5) == "kick " then
+			local query = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
+			pcall(function()
+				request({
+					Url = SERVER_URL .. "/kick",
+					Method = "POST",
+					Headers = { ["Content-Type"] = "application/json" },
+					Body = HttpService:JSONEncode({ target = query }),
+				})
+			end)
+			print("Kick queued:", query)
 		elseif text == "sia" or text == "signaura" then
 			startSignAura()
 			print("SignAura: ON")
-
 		elseif text == "unsia" or text == "unsignaura" then
 			signAuraActive = false
 			print("SignAura: OFF")
-
 		elseif text == "uaa" or text == "unanchoraura" then
 			startUnanchorAura()
 			print("UnanchorAura: ON")
-
 		elseif text == "unuaa" or text == "ununanchoraura" then
 			unanchorAuraActive = false
 			print("UnanchorAura: OFF")
-
 		elseif text == "spray" or text == "sprayaura" then
 			startSprayAura()
 			print("SprayAura: ON")
-
 		elseif text == "unspray" or text == "unsprayaura" then
 			sprayAuraActive = false
 			print("SprayAura: OFF")
-
 		elseif text:sub(1, 5) == "fling" then
 			local query = text:sub(7):gsub("^%s+", ""):gsub("%s+$", "")
 			local lowerQuery = query:lower()
@@ -1174,8 +1300,10 @@ elseif text:sub(1, 5) == "kick " then
 			if not target then
 				for _, p in pairs(Players:GetPlayers()) do
 					if p ~= localPlayer then
-						if p.Name:lower():sub(1, #lowerQuery) == lowerQuery
-							or p.DisplayName:lower():sub(1, #lowerQuery) == lowerQuery then
+						if
+							p.Name:lower():sub(1, #lowerQuery) == lowerQuery
+							or p.DisplayName:lower():sub(1, #lowerQuery) == lowerQuery
+						then
 							target = p
 							break
 						end
@@ -1192,27 +1320,21 @@ elseif text:sub(1, 5) == "kick " then
 			else
 				print("fling: no target for '" .. query .. "'")
 			end
-
 		elseif text == "fling stop" or text == "unfling" then
 			flingActive = false
 			print("Fling stopped")
-
 		elseif text == "autopickup true" or text == "autopickup t" then
 			autoPickup = true
 			print("Auto Pickup: ON")
-
 		elseif text == "autopickup false" or text == "autopickup f" then
 			autoPickup = false
 			print("Auto Pickup: OFF")
-
 		elseif text == "autodelcubesall true" or text == "autodelcubesall t" or text == "ada t" then
 			autoDelCubesAll = true
 			print("Auto DelCubes All: ON")
-
 		elseif text == "autodelcubesall false" or text == "autodelcubesall f" or text == "ada f" then
 			autoDelCubesAll = false
 			print("Auto DelCubes All: OFF")
-
 		elseif text:sub(1, 5) == "goto " then
 			local query = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
 			local lowerQuery = query:lower()
@@ -1228,8 +1350,10 @@ elseif text:sub(1, 5) == "kick " then
 			if not found then
 				for _, p in pairs(Players:GetPlayers()) do
 					if p ~= localPlayer then
-						if p.Name:lower():sub(1, #lowerQuery) == lowerQuery
-							or p.DisplayName:lower():sub(1, #lowerQuery) == lowerQuery then
+						if
+							p.Name:lower():sub(1, #lowerQuery) == lowerQuery
+							or p.DisplayName:lower():sub(1, #lowerQuery) == lowerQuery
+						then
 							found = p
 							break
 						end
@@ -1249,39 +1373,45 @@ elseif text:sub(1, 5) == "kick " then
 			else
 				print("goto: player not found for query '" .. query .. "'")
 			end
-
-elseif text == "cmds" then
-    local Event = game:GetService("ReplicatedStorage").System
-    pcall(function()
-        firesignal(Event.OnClientEvent,
-            "<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks, goon(gives gooning emote), close, cmds</font>"
-        )
-    end)
-    textBox.Text = ""
-    return
-
-
+		elseif text == "cmds" then
+			local Event = game:GetService("ReplicatedStorage").System
+			pcall(function()
+				firesignal(
+					Event.OnClientEvent,
+					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks, goon(gives gooning emote), close, cmds</font>"
+				)
+			end)
+			textBox.Text = ""
+			return
 		elseif text == "spychat true" or text == "spychat t" then
 			spychat = true
 			print("SpyChat: ON")
-
 		elseif text == "spychat false" or text == "spychat f" then
 			spychat = false
 			print("SpyChat: OFF")
-
-		elseif text == "antiinvis true" or text == "antiinvis t" or text == "antiinvisible true" or text == "antiinvisible t" then
+		elseif
+			text == "antiinvis true"
+			or text == "antiinvis t"
+			or text == "antiinvisible true"
+			or text == "antiinvisible t"
+		then
 			antiinvis = true
 			print("Anti Invisible: ON")
-
-		elseif text == "antiinvis false" or text == "antiinvis f" or text == "antiinvisible false" or text == "antiinvisible f" then
+		elseif
+			text == "antiinvis false"
+			or text == "antiinvis f"
+			or text == "antiinvisible false"
+			or text == "antiinvisible f"
+		then
 			antiinvis = false
 			print("Anti Invisible: OFF")
-
 		elseif text == "jerkoff" or text == "goon" then
 			local speaker = localPlayer
 			local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
 			local backpack = speaker:FindFirstChildWhichIsA("Backpack")
-			if not humanoid or not backpack then return end
+			if not humanoid or not backpack then
+				return
+			end
 
 			local function r15(player)
 				local character = player.Character
@@ -1299,16 +1429,23 @@ elseif text == "cmds" then
 
 			local function stopTomfoolery()
 				jorkin = false
-				if track then track:Stop(); track = nil end
+				if track then
+					track:Stop()
+					track = nil
+				end
 			end
 
-			tool.Equipped:Connect(function() jorkin = true end)
+			tool.Equipped:Connect(function()
+				jorkin = true
+			end)
 			tool.Unequipped:Connect(stopTomfoolery)
 			humanoid.Died:Connect(stopTomfoolery)
 
 			task.spawn(function()
 				while task.wait() do
-					if not jorkin then continue end
+					if not jorkin then
+						continue
+					end
 					local isR15 = r15(speaker)
 					if not track then
 						local anim = Instance.new("Animation")
@@ -1319,11 +1456,15 @@ elseif text == "cmds" then
 					track:AdjustSpeed(isR15 and 0.7 or 0.65)
 					track.TimePosition = 0.6
 					task.wait(0.1)
-					while track and track.TimePosition < (not isR15 and 0.65 or 0.7) do task.wait(0.1) end
-					if track then track:Stop(); track = nil end
+					while track and track.TimePosition < (not isR15 and 0.65 or 0.7) do
+						task.wait(0.1)
+					end
+					if track then
+						track:Stop()
+						track = nil
+					end
 				end
 			end)
-
 		elseif text == "close" then
 			_G.SCRIPTLOADEDCMDLINE = false
 			task.wait(0.2)
@@ -1343,7 +1484,9 @@ elseif text == "cmds" then
 	end)
 
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then return end
+		if gameProcessed then
+			return
+		end
 		if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
 			mainFrame.Visible = not mainFrame.Visible
 		elseif input.KeyCode == Enum.KeyCode.Semicolon then
@@ -1352,5 +1495,4 @@ elseif text == "cmds" then
 			textBox:CaptureFocus()
 		end
 	end)
-
 end
