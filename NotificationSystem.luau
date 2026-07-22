@@ -1,106 +1,122 @@
---[=[
- d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
-88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
-88      88    88    88            odD'      88      88    88 88ooo88 
-88  ooo 88    88    88          .88'        88      88    88 88~~~88 
-88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
- Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
-]=]
+-- Generated using RoadToGlory's Converter v1.1 (RoadToGlory#9879)
 
--- Instances: 10 | Scripts: 0 | Modules: 0 | Tags: 0
-local G2L = {};
+-- Instances:
 
--- StarterGui.NotificationSystem
-G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
-G2L["1"]["Name"] = [[NotificationSystem]];
-G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+local Converted = {
+	["_NotificationSystem"] = Instance.new("ScreenGui");
+	["_NotificationHandler"] = Instance.new("Frame");
+	["_UICorner"] = Instance.new("UICorner");
+	["_UIShadow"] = Instance.new("UIShadow");
+	["_NotificationHeader"] = Instance.new("TextLabel");
+	["_UICorner1"] = Instance.new("UICorner");
+	["_UIShadow1"] = Instance.new("UIShadow");
+	["_NotificationBody"] = Instance.new("TextLabel");
+	["_UIShadow2"] = Instance.new("UIShadow");
+	["_UICorner2"] = Instance.new("UICorner");
+}
 
+-- Properties:
 
--- StarterGui.NotificationSystem.NotificationHandler
-G2L["2"] = Instance.new("Frame", G2L["1"]);
-G2L["2"]["BorderSizePixel"] = 0;
-G2L["2"]["BackgroundColor3"] = Color3.fromRGB(51, 51, 51);
-G2L["2"]["Size"] = UDim2.new(0.43049, 0, 0.10845, 0);
-G2L["2"]["Position"] = UDim2.new(0.27093, 0, 0, 0);
-G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["2"]["Name"] = [[NotificationHandler]];
+Converted["_NotificationSystem"].ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Converted["_NotificationSystem"].Name = "NotificationSystem"
+Converted["_NotificationSystem"].Parent = game:GetService("CoreGui")
 
+Converted["_NotificationHandler"].BackgroundColor3 = Color3.fromRGB(50.000000819563866, 50.000000819563866, 50.000000819563866)
+Converted["_NotificationHandler"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_NotificationHandler"].BorderSizePixel = 0
+Converted["_NotificationHandler"].Position = UDim2.new(0.270932078, 0, 0, 0)
+Converted["_NotificationHandler"].Size = UDim2.new(0.430489719, 0, 0.10844893, 0)
+Converted["_NotificationHandler"].Name = "NotificationHandler"
+Converted["_NotificationHandler"].Parent = Converted["_NotificationSystem"]
 
--- StarterGui.NotificationSystem.NotificationHandler.UICorner
-G2L["3"] = Instance.new("UICorner", G2L["2"]);
+Converted["_UICorner"].Parent = Converted["_NotificationHandler"]
 
+Converted["_UIShadow"].BlurRadius = UDim.new(0, 30)
+Converted["_UIShadow"].Color = Color3.fromRGB(30.00000201165676, 10.000000353902578, 255)
+Converted["_UIShadow"].Parent = Converted["_NotificationHandler"]
 
+Converted["_NotificationHeader"].Font = Enum.Font.SourceSans
+Converted["_NotificationHeader"].RichText = true
+Converted["_NotificationHeader"].Text = "Notification Header Example"
+Converted["_NotificationHeader"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_NotificationHeader"].TextScaled = true
+Converted["_NotificationHeader"].TextSize = 14
+Converted["_NotificationHeader"].TextWrapped = true
+Converted["_NotificationHeader"].BackgroundColor3 = Color3.fromRGB(50.00000461935997, 50.00000461935997, 50.00000461935997)
+Converted["_NotificationHeader"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_NotificationHeader"].BorderSizePixel = 0
+Converted["_NotificationHeader"].Position = UDim2.new(0.0165137611, 0, 0.0813953504, 0)
+Converted["_NotificationHeader"].Size = UDim2.new(0.961467862, 0, 0.232558146, 0)
+Converted["_NotificationHeader"].Name = "NotificationHeader"
+Converted["_NotificationHeader"].Parent = Converted["_NotificationHandler"]
 
--- StarterGui.NotificationSystem.NotificationHandler.UIShadow
-G2L["4"] = Instance.new("UIShadow", G2L["2"]);
+Converted["_UICorner1"].Parent = Converted["_NotificationHeader"]
 
+Converted["_UIShadow1"].BlurRadius = UDim.new(0, 20)
+Converted["_UIShadow1"].Parent = Converted["_NotificationHeader"]
 
+Converted["_NotificationBody"].Font = Enum.Font.SourceSans
+Converted["_NotificationBody"].RichText = true
+Converted["_NotificationBody"].Text = "Text Body Example"
+Converted["_NotificationBody"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_NotificationBody"].TextScaled = true
+Converted["_NotificationBody"].TextSize = 14
+Converted["_NotificationBody"].TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_NotificationBody"].TextWrapped = true
+Converted["_NotificationBody"].BackgroundColor3 = Color3.fromRGB(50.00000461935997, 50.00000461935997, 50.00000461935997)
+Converted["_NotificationBody"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_NotificationBody"].BorderSizePixel = 0
+Converted["_NotificationBody"].Position = UDim2.new(0, 9, 0, 39)
+Converted["_NotificationBody"].Size = UDim2.new(0, 524, 0, 40)
+Converted["_NotificationBody"].Name = "NotificationBody"
+Converted["_NotificationBody"].Parent = Converted["_NotificationHandler"]
 
--- StarterGui.NotificationSystem.NotificationHandler.NotificationHeader
-G2L["5"] = Instance.new("TextLabel", G2L["2"]);
-G2L["5"]["TextWrapped"] = true;
-G2L["5"]["BorderSizePixel"] = 0;
-G2L["5"]["TextSize"] = 14;
-G2L["5"]["TextScaled"] = true;
-G2L["5"]["BackgroundColor3"] = Color3.fromRGB(51, 51, 51);
-G2L["5"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["5"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["5"]["RichText"] = true;
-G2L["5"]["Size"] = UDim2.new(0.96147, 0, 0.23256, 0);
-G2L["5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["5"]["Text"] = [[Notification Header Example]];
-G2L["5"]["Name"] = [[NotificationHeader]];
-G2L["5"]["Position"] = UDim2.new(0.01651, 0, 0.0814, 0);
+Converted["_UIShadow2"].BlurRadius = UDim.new(0, 20)
+Converted["_UIShadow2"].Parent = Converted["_NotificationBody"]
 
+Converted["_UICorner2"].Parent = Converted["_NotificationBody"]
 
--- StarterGui.NotificationSystem.NotificationHandler.NotificationHeader.UICorner
-G2L["6"] = Instance.new("UICorner", G2L["5"]);
+local Gui = Converted["_NotificationSystem"]
+local Handler = Converted["_NotificationHandler"]
 
+Gui.Enabled = false
 
+local Queue = {}
+local Showing = false
 
--- StarterGui.NotificationSystem.NotificationHandler.NotificationHeader.UIShadow
-G2L["7"] = Instance.new("UIShadow", G2L["5"]);
+local function ProcessQueue()
+	if Showing then
+		return
+	end
 
+	Showing = true
 
+	while #Queue > 0 do
+		local Data = table.remove(Queue, 1)
 
--- StarterGui.NotificationSystem.NotificationHandler.NotificationBody
-G2L["8"] = Instance.new("TextLabel", G2L["2"]);
-G2L["8"]["TextWrapped"] = true;
-G2L["8"]["BorderSizePixel"] = 0;
-G2L["8"]["TextSize"] = 14;
-G2L["8"]["TextStrokeColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["8"]["TextScaled"] = true;
-G2L["8"]["BackgroundColor3"] = Color3.fromRGB(51, 51, 51);
-G2L["8"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["8"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["8"]["RichText"] = true;
-G2L["8"]["Size"] = UDim2.new(0.96147, 0, 0.46512, 0);
-G2L["8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["8"]["Text"] = [[Text Body Example]];
-G2L["8"]["Name"] = [[NotificationBody]];
-G2L["8"]["Position"] = UDim2.new(0.01651, 0, 0.45349, 0);
+		Handler.NotificationHeader.Text = Data.Header
+		Handler.NotificationBody.Text = Data.Body
 
+		Gui.Enabled = true
 
--- StarterGui.NotificationSystem.NotificationHandler.NotificationBody.UIShadow
-G2L["9"] = Instance.new("UIShadow", G2L["8"]);
+		task.wait(Data.Time)
 
+		Gui.Enabled = false
 
+		task.wait(0.25)
+	end
 
--- StarterGui.NotificationSystem.NotificationHandler.NotificationBody.UICorner
-G2L["a"] = Instance.new("UICorner", G2L["8"]);
-
-local Gui = G2L["1"]
+	Showing = false
+end
 
 local function Notify(Header, Body, Time)
-	Time = Time or 3
+	table.insert(Queue, {
+		Header = Header,
+		Body = Body,
+		Time = Time or 3
+	})
 
-	Gui.Enabled = true
-	Gui.NotificationHandler.NotificationHeader.Text = Header
-	Gui.NotificationHandler.NotificationBody.Text = Body
-
-	task.delay(Time, function()
-		Gui.Enabled = false
-	end)
+	task.spawn(ProcessQueue)
 end
 
 return Notify
