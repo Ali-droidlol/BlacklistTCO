@@ -7,12 +7,7 @@
  Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP
 ]=]
 
-if _G.SCRIPTLOADEDCMDLINE == true then
-	warn("Local player already executed the script")
-	return
-end
 
-_G.SCRIPTLOADEDCMDLINE = true
 
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
@@ -34,6 +29,39 @@ local GLITCH_POS = Vector3.new(1234566.625, 1234470.375, 1234566.625)
 
 local GLITCH_RADIUS = 100000
 
+local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/NotificationSystem.luau"))()
+-- usage Notify("Loaded", "Everything is ready.", 5)
+
+local scriptversion = game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/version.txt")
+
+scriptversion = scriptversion:gsub("%s+", "")
+
+local currentscriptversion = '1.0'
+if scriptversion == currentscriptversion then
+	print('Script is correct version')
+	print('Script version = '.. currentscriptversion)
+	Notify('script version', 'script is on right version', 3)
+else
+	warn('Script Is wrong version please update.')
+	warn('your currently on a incorrect version of the script please update too '.. scriptversion)
+	warn('current script is on version '.. currentscriptversion)
+end
+
+
+
+
+
+
+
+
+
+
+if _G.SCRIPTLOADEDCMDLINE == true then
+	warn("Local player already executed the script")
+	return
+end
+
+_G.SCRIPTLOADEDCMDLINE = true
 -- ============================================================
 -- STASH SYSTEM (copied verbatim from your other script)
 -- ============================================================
@@ -1823,6 +1851,7 @@ elseif text == "shop" then
 		end
 	end)
 
+
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then
 			return
@@ -1836,3 +1865,4 @@ elseif text == "shop" then
 		end
 	end)
 end
+Notify('Script Status', 'Script Has Loaded', 3)
