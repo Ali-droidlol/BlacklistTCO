@@ -34,6 +34,8 @@ local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ali-dr
 
 local scriptversion = game:HttpGet("https://raw.githubusercontent.com/Ali-droidlol/BlacklistTCO/refs/heads/main/version.txt")
 
+local antiStash = false
+
 scriptversion = scriptversion:gsub("%s+", "")
 
 local currentscriptversion = '1.0'
@@ -1398,6 +1400,47 @@ if localPlayer then
 		end
 	end)
 
+
+
+task.spawn(function()
+    while task.wait(1) do
+        if antiStash then
+            local LocalPlayer = Players.LocalPlayer
+
+            for _, folder in ipairs(workspace.Clones:GetChildren()) do
+                if folder:IsA("Folder") or folder:IsA("Model") then
+                    for _, clone in ipairs(folder:GetChildren()) do
+                        if clone.Name == "Clone" then
+                            local arkenstone = clone:FindFirstChild("The Arkenstone", true)
+                            local bluebucket = clone:FindFirstChild("BlueBucket", true)
+                            if arkenstone or bluebucket then
+                                local tool = LocalPlayer.Backpack:FindFirstChild("The Arkenstone")
+                                if tool then
+                                    tool.Parent = LocalPlayer.Character
+                                    task.wait(1)
+                                end
+                                local playerName = folder.Name:gsub("_", ".")
+                                TextChatService.TextChannels.RBXGeneral:SendAsync("delclones " .. playerName)
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+
+            for _, v in ipairs(workspace:GetChildren()) do
+                if v:IsA("Tool") and v.Name == "The Arkenstone" then
+                    v.Parent = LocalPlayer.Character
+                    task.wait(1)
+                    TextChatService.TextChannels.RBXGeneral:SendAsync("debug")
+                end
+            end
+        end
+    end
+end)
+
+
+
 	-- ============================================================
 	-- EXECUTE COMMAND
 	-- ============================================================
@@ -1603,6 +1646,13 @@ if localPlayer then
 				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
 			end)
 			Notify('fixvamp Status', 'Vamp Fix has been done', 3)
+		elseif text == 'pickup' then
+			for i,v in ipairs(Workspace:GetChildren()) do
+            if v:IsA('Tool') then
+            firetouchinterest(v.Handle, game.Players.LocalPlayer.Character.HumanoidRootPart, 0)
+            end
+        end
+		Notify('Pickup Status', 'Picked Up tools of the floor', 2)
 		elseif text == "fling stop" or text == "unfling" then
 			flingActive = false
 			print("Fling stopped")
@@ -1667,7 +1717,7 @@ if localPlayer then
 			pcall(function()
 				firesignal(
 					Event.OnClientEvent,
-					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks(enable/disable billboards), stash, stopstash, tostash, stashplatform, unstashplatform, fog, close, cmds</font>"
+					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks(enable/disable billboards), stash, stopstash, tostash, stashplatform, unstashplatform, fog, close, antistash(Removes stashes <t,f>) pickup(just pickups everything on the floor) cmds</font>"
 				)
 			end)
 			textBox.Text = ""
@@ -1781,6 +1831,14 @@ if localPlayer then
 elseif text == 'gameid' then
 	setclipboard(game.GameId)
 	Notify('Clipboard Status', 'Game ID has been copied to clipboard', 1)
+
+elseif text == "antistash t" or text == "antistash true" then
+    antiStash = true
+    Notify("Anti Stash", "Enabled", 3)
+elseif text == "antistash f" or text == "antistash false" then
+    antiStash = false
+    Notify("Anti Stash", "Disabled", 3)
+
 
 elseif text == "shop" then
 	task.spawn(function()
