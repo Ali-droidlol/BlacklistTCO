@@ -81,25 +81,36 @@ local Handler = Converted["_NotificationHandler"]
 
 Gui.Enabled = false
 
-local Busy = false
+local Queue = {}
+local Processing = false
 
 local function Notify(Header, Body, Time)
-	if Busy then
+	table.insert(Queue, {
+		Header = Header,
+		Body = Body,
+		Time = Time or 3
+	})
+
+	if Processing then
 		return
 	end
 
-	Busy = true
+	Processing = true
 
-	Handler.NotificationHeader.Text = Header
-	Handler.NotificationBody.Text = Body
+	while #Queue > 0 do
+		local Data = table.remove(Queue, 1)
 
-	Gui.Enabled = true
+		Handler.NotificationHeader.Text = Data.Header
+		Handler.NotificationBody.Text = Data.Body
 
-	task.wait(Time or 3)
+		Gui.Enabled = true
+		task.wait(Data.Time)
+		Gui.Enabled = false
 
-	Gui.Enabled = false
+		task.wait(0.2)
+	end
 
-	Busy = false
+	Processing = false
 end
 
 return Notify
