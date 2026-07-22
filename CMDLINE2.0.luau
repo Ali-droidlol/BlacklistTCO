@@ -1421,12 +1421,15 @@ if localPlayer then
 		elseif text == "getjobid" or text == "jobid" or text == "getjob" then
 			setclipboard(game.JobId)
 			print("Job ID copied:", game.JobId)
+			Notify('JOB ID Status', 'Job ID HAS BEEN COPIED TO CLIPBOARD', 3)
 		elseif text == "antifreeze true" or text == "antifreeze t" then
 			antiFreeze = true
 			print("Anti Freeze: ON")
+			Notify('Anti Freeze status', 'Anti Freeze ON', 3)
 		elseif text == "antifreeze false" or text == "antifreeze f" then
 			antiFreeze = false
 			print("Anti Freeze: OFF")
+			Notify('Anti Freeze status', 'Anti Freeze OFF', 3)
 		elseif text == "antiblind true" or text == "antiblind t" then
 			local blind = playerGui:FindFirstChild("Blind")
 			if blind and blind:FindFirstChild("Frame") then
@@ -1450,9 +1453,11 @@ if localPlayer then
 		elseif text == "ale t" then
 			aleT = true
 			print("ALE T: ON")
+			Notify('ALE Status', 'ALE ON', 3)
 		elseif text == "ale f" then
 			aleT = false
 			print("ALE F: OFF")
+			Notify('ALE Status', 'ALE OFF', 3)
 		elseif text:sub(1, 6) == "speed " then
 			local speed = tonumber(text:sub(7))
 			if speed then
@@ -1464,6 +1469,7 @@ if localPlayer then
 				end
 			else
 				warn("Usage: speed <number>")
+				Notify('User Error', 'Usage: Speed <Number>')
 			end
 		elseif text:sub(1, 4) == "bang" then
 			local parts = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
@@ -1472,30 +1478,38 @@ if localPlayer then
 			local speed = tonumber(args[2]) or 3
 			startBang(targetName, speed)
 			print("Bang: ON")
+			Notify('Bang Status', 'Bang Enabled', 3)
 		elseif text == "unbang" then
 			stopBang()
 			print("Bang: OFF")
+			Notify('Bang Status', 'Bang Disabled', 3)
 		elseif text == "antiglitch true" or text == "antiglitch t" or text == "ag true" or text == "ag t" then
 			antiGlitch = true
 			print("Anti Glitch: ON")
+			Notify('Anti Glitch Status', 'Anti GLitch has been Enabled', 3)
 		elseif text == "antiglitch false" or text == "antiglitch f" or text == "ag false" or text == "ag f" then
 			antiGlitch = false
 			print("Anti Glitch: OFF")
+			Notify('Anti Glitch Status', 'Anti GLitch has been disabled', 3)
 		elseif text == "dela" then
 			startGriefAura()
 			print("DeleteAura: ON")
+			Notify('Delete Aura status', 'Delete Aura Enabled', 3)
 		elseif text == "undela" then
 			griefActive = false
 			print("DeleteAura: OFF")
+			Notify('Dela status', 'Delete Aura Has been disabled', 3)
 		elseif text == "ranksenable t" or text == "re t" or text == "ranks t" then
 			ranksEnabled = true
 			print("Ranks / Billboards: ENABLED")
+			Notify('Ranks Status', 'Ranks Have Been Enabled', 3)
 			for _, p in ipairs(Players:GetPlayers()) do
 				createBillboard(p)
 			end
 		elseif text == "ranksenable f" or text == "re f" or text == "ranks f" then
 			ranksEnabled = false
 			print("Ranks / Billboards: DISABLED")
+			Notify('Ranks Status', 'Ranks have been disabled for the localplayer', 3)
 			for _, p in ipairs(Players:GetPlayers()) do
 				if p.Character then
 					local head = p.Character:FindFirstChild("Head")
@@ -1518,24 +1532,31 @@ if localPlayer then
 				})
 			end)
 			print("Kick queued:", query)
+			Notify('Kick Status', 'Kick Has been queued for '.. query, 3)
 		elseif text == "sia" or text == "signaura" then
 			startSignAura()
 			print("SignAura: ON")
+			Notify('Sign Aura Status', 'Sign Aura Has been enabled', 3)
 		elseif text == "unsia" or text == "unsignaura" then
 			signAuraActive = false
 			print("SignAura: OFF")
+			Notify('Sign Aura Status', 'Sign aura has been disabled', 3)
 		elseif text == "uaa" or text == "unanchoraura" then
 			startUnanchorAura()
 			print("UnanchorAura: ON")
+			Notify('UnanchorAura Status', 'Unanchor Aura has been enabled', 3)
 		elseif text == "unuaa" or text == "ununanchoraura" then
 			unanchorAuraActive = false
 			print("UnanchorAura: OFF")
+			Notify('Unanchor Aura Status', 'Unanchor Aura Has been Disabled',3)
 		elseif text == "spray" or text == "sprayaura" then
 			startSprayAura()
 			print("SprayAura: ON")
+			Notify('Spray Status', 'Spray aura has been enabled', 3)
 		elseif text == "unspray" or text == "unsprayaura" then
 			sprayAuraActive = false
 			print("SprayAura: OFF")
+			Notify('Spray Aura status', 'Spray aura is off', 3)
 		elseif text:sub(1, 5) == "fling" then
 			local query = text:sub(7):gsub("^%s+", ""):gsub("%s+$", "")
 			local lowerQuery = query:lower()
@@ -1568,8 +1589,10 @@ if localPlayer then
 					flingActive = false
 				end)
 				print("Flinging:", target.Name)
+				Notify('Fling Status', 'Flung '.. target.Name, 3)
 			else
 				print("fling: no target for '" .. query .. "'")
+				Notify('Fling Status', 'No target for fling check console for more details')
 			end
 		elseif text == 'fixvamp' then
 			workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
@@ -1579,21 +1602,27 @@ if localPlayer then
 			pcall(function()
 				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
 			end)
+			Notify('fixvamp Status', 'Vamp Fix has been done', 3)
 		elseif text == "fling stop" or text == "unfling" then
 			flingActive = false
 			print("Fling stopped")
+			Notify('Fling Status', 'Fling has been stoped', 3)
 		elseif text == "autopickup true" or text == "autopickup t" then
 			autoPickup = true
 			print("Auto Pickup: ON")
+			Notify('Auto Pickup Status', 'Auto pickup has been set to true', 3)
 		elseif text == "autopickup false" or text == "autopickup f" then
 			autoPickup = false
 			print("Auto Pickup: OFF")
+			Notify('Auto Pickup Status', 'Auto Pickup has been set to false', 3)
 		elseif text == "autodelcubesall true" or text == "autodelcubesall t" or text == "ada t" then
 			autoDelCubesAll = true
 			print("Auto DelCubes All: ON")
+			Notify('Auto Delcubes Status', 'Auto Delcubes has been set to True')
 		elseif text == "autodelcubesall false" or text == "autodelcubesall f" or text == "ada f" then
 			autoDelCubesAll = false
 			print("Auto DelCubes All: OFF")
+			Notify('Auto delcubes status', 'Auto delcubes has been set to off')
 		elseif text:sub(1, 5) == "goto " then
 			local query = text:sub(6):gsub("^%s+", ""):gsub("%s+$", "")
 			local lowerQuery = query:lower()
@@ -1631,13 +1660,14 @@ if localPlayer then
 				end
 			else
 				print("goto: player not found for query '" .. query .. "'")
+				Notify('Goto Status', 'Player not found Check Console For more detail', 3)
 			end
 		elseif text == "cmds" then
 			local Event = game:GetService("ReplicatedStorage").System
 			pcall(function()
 				firesignal(
 					Event.OnClientEvent,
-					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks(enable/disable billboards), stash, stopstash, tostash, stashplatform, unstashplatform, close, cmds</font>"
+					"<font color='#4488ff'>fly, unfly, reset, rejoin, getjobid, speed, goto, fling, unfling, bang, unbang, dela(Delete aura), undela, sia(sign aura), unsia, uaa(anchor aura), unuaa(unanchor aura), spray(gives credits to TCORAIDS and hotdogn), unspray, autopickup(usecase autopickup t), ada(when get enlighten it delcubes), antifreeze, antiblind, antimyopic, antiglitch, antiinvis, spychat, ale(anti loose death on enlighten), ranks(enable/disable billboards), stash, stopstash, tostash, stashplatform, unstashplatform, fog, close, cmds</font>"
 				)
 			end)
 			textBox.Text = ""
@@ -1645,9 +1675,11 @@ if localPlayer then
 		elseif text == "spychat true" or text == "spychat t" then
 			spychat = true
 			print("SpyChat: ON")
+			Notify('Spychat Stauts', 'Spychat has been set to on', 3)
 		elseif text == "spychat false" or text == "spychat f" then
 			spychat = false
 			print("SpyChat: OFF")
+			Notify('Spychat status', 'Spychat has been set to off', 3)
 		elseif
 			text == "antiinvis true"
 			or text == "antiinvis t"
@@ -1656,6 +1688,7 @@ if localPlayer then
 		then
 			antiinvis = true
 			print("Anti Invisible: ON")
+			Notify('Anti Invisible Status', 'Anti Invisible has been set to on', 3)
 		elseif
 			text == "antiinvis false"
 			or text == "antiinvis f"
@@ -1664,6 +1697,7 @@ if localPlayer then
 		then
 			antiinvis = false
 			print("Anti Invisible: OFF")
+			Notify('Anti Invis Status', 'Anti Invisible Has been set to off', 3)
 		elseif text == "jerkoff" or text == "goon" then
 			local speaker = localPlayer
 			local humanoid = speaker.Character and speaker.Character:FindFirstChildWhichIsA("Humanoid")
@@ -1735,14 +1769,18 @@ if localPlayer then
 		if fog then
 			fog.Density = density
 			print("Fog density set to", density)
+			Notify('Fog Status', 'Fog density has been set to' ..density, 2)
 		else
+			Notify('Fog Status', 'Fog has not been found', 3)
 			warn("Fog object not found.")
 		end
 	else
+		Notify('User Error', 'Usage for fog: fog <number>', 3)
 		warn("Usage: fog <number>")
 	end
 elseif text == 'gameid' then
 	setclipboard(game.GameId)
+	Notify('Clipboard Status', 'Game ID has been copied to clipboard', 1)
 
 elseif text == "shop" then
 	task.spawn(function()
@@ -1800,11 +1838,11 @@ elseif text == "shop" then
 			)
 		end
 	end)
-	print("Attempting to hop to a different server...")
+	Notify('Server Hopping Status', 'Hopping To a other server', 2)
 
 		elseif text == "close" then
 			_G.SCRIPTLOADEDCMDLINE = false
-			task.wait(0.2)
+			Notify('Script Status', 'Script Will close very soon', 3)
 			screenGui:Destroy()
 			return
 		-- ============================================================
@@ -1865,4 +1903,5 @@ elseif text == "shop" then
 		end
 	end)
 end
-Notify('Script Status', 'Script Has Loaded', 3)
+Notify('Script Status', 'Script Has Loaded Discord Link Has Been Copied To Clipboard', 3)
+setclipboard('discord.gg/M8AzezvrsH')
