@@ -66,8 +66,8 @@ Converted["_NotificationBody"].TextWrapped = true
 Converted["_NotificationBody"].BackgroundColor3 = Color3.fromRGB(50.00000461935997, 50.00000461935997, 50.00000461935997)
 Converted["_NotificationBody"].BorderColor3 = Color3.fromRGB(0, 0, 0)
 Converted["_NotificationBody"].BorderSizePixel = 0
-Converted["_NotificationBody"].Position = UDim2.new(0, 9, 0, 39)
-Converted["_NotificationBody"].Size = UDim2.new(0, 524, 0, 40)
+Converted["_NotificationBody"].Position = UDim2.new(0.0165137611, 0, 0.45348838, 0)
+Converted["_NotificationBody"].Size = UDim2.new(0.961467862, 0, 0.465116292, 0)
 Converted["_NotificationBody"].Name = "NotificationBody"
 Converted["_NotificationBody"].Parent = Converted["_NotificationHandler"]
 
@@ -75,6 +75,7 @@ Converted["_UIShadow2"].BlurRadius = UDim.new(0, 20)
 Converted["_UIShadow2"].Parent = Converted["_NotificationBody"]
 
 Converted["_UICorner2"].Parent = Converted["_NotificationBody"]
+
 
 local Gui = Converted["_NotificationSystem"]
 local Handler = Converted["_NotificationHandler"]
